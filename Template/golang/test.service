@@ -1,0 +1,13 @@
+[Unit]
+Description=this is a test service
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/test
+Restart=always
+User=nobody
+Group=nogroup
+
+[Install]
+WantedBy=multi-user.target
+
