@@ -18,6 +18,7 @@ func main() {
 	//example_json_op()
 	//example_timer_manager()
 	//example_2_gorm()
+	//example_route()
 
 	for {
 		//DBG_LOG("hello wolrd")

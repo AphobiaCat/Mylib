@@ -18,8 +18,8 @@ type Test_GORM_Data struct {
 func example_gorm(){
 	Init_Gorm(dsn_str, &Test_GORM_Data{})
 
-	tgd		:= Test_GORM_Data{Name:"Dunty张西", Email:"1007036321", Password:"123"}
-	tgd2	:= Test_GORM_Data{Name:"石卓敏", Email:"1123490613", Password:"123"}
+	tgd		:= Test_GORM_Data{Name:"Dunty", Email:"Dunty@gmail.com", Password:"123"}
+	tgd2	:= Test_GORM_Data{Name:"Cirila", Email:"Cirila@Gmail.com", Password:"123"}
 	
 
 	Gorm_Create(&tgd)
@@ -33,6 +33,10 @@ func example_gorm(){
 	DBG_LOG(tgd3)
 	
 	Gorm_Update(&tgd3, "Email", "123123123")
+
+	tgd3.Name = "Dunty"
+
+	Gorm_Updates(&tgd3, &tgd3)
 	
 	Gorm_Delete(&tgd)
 }
@@ -69,9 +73,9 @@ func example_2_gorm(){
 
 	Init_Gorm(dsn_str, &User{}, &Comment{})
 
-	user1 := User{ID:"123456", Name:"石卓敏", Email:"@qq.com"}	
-	user2 := User{ID:"789101", Name:"张西"	, Email:"@gmail.com"}
-	user3 := User{ID:"112131", Name:"世界"	, Email:"@360.com"}
+	user1 := User{ID:"123456", Name:"Cirila", Email:"Cirila@gmail.com"}	
+	user2 := User{ID:"789101", Name:"Dunty"	, Email:"Dunty@gmail.com"}
+	user3 := User{ID:"112131", Name:"World"	, Email:"World@gmail.com"}
 	
 	Gorm_Create(&user1)
 	Gorm_Create(&user2)
@@ -87,16 +91,16 @@ func example_2_gorm(){
 
 	DBG_LOG("create comment")
 
-	comment  := Comment{Content:"你好 世界1", UserID:"123456", Mint:"0x1"}
-	comment1 := Comment{Content:"你好 世界2", UserID:"112131", Mint:"0x1"		, ParentID:&tmp_num}
-	comment2 := Comment{Content:"你好 世界3", UserID:"112131", Mint:"0x1"}
-	comment3 := Comment{Content:"你好 世界4", UserID:"789101", Mint:"0x1"}
-	comment4 := Comment{Content:"你好 世界5", UserID:"123456", Mint:"0x1"		, ParentID:&tmp_num}
-	comment5 := Comment{Content:"你好 世界6", UserID:"789101", Mint:"0x1"}
-	comment6 := Comment{Content:"你好 世界7", UserID:"112131", Mint:"0x1"		, ParentID:&tmp_num2}
-	comment7 := Comment{Content:"你好 世界8", UserID:"123456", Mint:"0x1"}
-	comment8 := Comment{Content:"你好 世界9", UserID:"789101", Mint:"0x1"}
-	comment9 := Comment{Content:"你好 世界10", UserID:"112131", Mint:"0x1"		, ParentID:&tmp_num3}
+	comment  := Comment{Content:"Hello World1", UserID:"123456", Mint:"0x1"}
+	comment1 := Comment{Content:"Hello World2", UserID:"112131", Mint:"0x1"		, ParentID:&tmp_num}
+	comment2 := Comment{Content:"Hello World3", UserID:"112131", Mint:"0x1"}
+	comment3 := Comment{Content:"Hello World4", UserID:"789101", Mint:"0x1"}
+	comment4 := Comment{Content:"Hello World5", UserID:"123456", Mint:"0x1"		, ParentID:&tmp_num}
+	comment5 := Comment{Content:"Hello World6", UserID:"789101", Mint:"0x1"}
+	comment6 := Comment{Content:"Hello World7", UserID:"112131", Mint:"0x1"		, ParentID:&tmp_num2}
+	comment7 := Comment{Content:"Hello World8", UserID:"123456", Mint:"0x1"}
+	comment8 := Comment{Content:"Hello World9", UserID:"789101", Mint:"0x1"}
+	comment9 := Comment{Content:"Hello World10", UserID:"112131", Mint:"0x1"		, ParentID:&tmp_num3}
 
 	Gorm_Create(&comment)	
 	Gorm_Create(&comment1)
@@ -116,7 +120,7 @@ func example_2_gorm(){
 	DBG_LOG(comment_of_mint)
 
 	var comment_of_user User
-	Gorm_Foreign_Where(&comment_of_user, &User{Name:"张西"}, "Comments")
+	Gorm_Foreign_Where(&comment_of_user, &User{Name:"Dunty"}, "Comments")
 	DBG_LOG(comment_of_user)
 
 	var foregin_use User

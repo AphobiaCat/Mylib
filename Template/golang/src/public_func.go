@@ -5,7 +5,12 @@ import (
 	"runtime"
 	"path/filepath"
 	"reflect"
+	"time"
 )
+
+func sleep(sleep_ms int){
+	time.Sleep(time.Duration(sleep_ms) * time.Millisecond)
+}
 
 func DBG_LOG_VAR(v interface{}){
 
@@ -326,4 +331,5 @@ func convertIntStrToInt(num string) int {
 	}
 	return ret
 }
+
 
