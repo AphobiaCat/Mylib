@@ -1,4 +1,4 @@
-module header_central
+module mylib
 
 go 1.20
 
