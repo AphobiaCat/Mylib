@@ -13,6 +13,18 @@ import(
 	}
 	ret := Build_Net_Jason(obj)
 */
+
+func Build_Jason(obj interface{}) string{
+
+    jsonData, err := json.Marshal(obj)
+	if err != nil {
+		DBG_ERR("Error marshalling JSON:", err)
+	}
+	
+	return string(jsonData)
+}
+
+
 func Build_Net_Jason(obj interface{}) *bytes.Buffer{
 
     jsonData, err := json.Marshal(obj)

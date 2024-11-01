@@ -8,6 +8,12 @@ import (
 	"time"
 )
 
+func now_time_s() int64{
+	now		:= time.Now()
+    seconds	:= now.Unix()
+    return seconds
+}
+
 func sleep(sleep_ms int){
 	time.Sleep(time.Duration(sleep_ms) * time.Millisecond)
 }

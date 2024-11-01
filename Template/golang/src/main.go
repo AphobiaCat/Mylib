@@ -4,12 +4,12 @@ import (
 	"time"
 )
 
+
+
 // ----------------Global Parameter>
 
 
 // ----------------Function>
-
-
 
 
 func main() {
@@ -19,6 +19,7 @@ func main() {
 	//example_timer_manager()
 	//example_2_gorm()
 	//example_route()
+	//example_cachesql()
 
 	for {
 		//DBG_LOG("hello wolrd")
