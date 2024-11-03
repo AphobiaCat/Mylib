@@ -6,31 +6,25 @@ import(
 	"mylib/src/public"
 )
 
-type UsrInfo_GORM_Data struct {
-	Name	string	`gorm:"primaryKey"`
-	Age		int		`gorm:"age"`
-	Email	string	`gorm:"email"`
-}
-
 type UsrInfo struct{
-	Name	string	`json:"name"`
-	Age		int		`json:"age"`
-	Email	string	`json:"email"`
+	Name	string	`json:"name" gorm:"primaryKey"`
+	Age		int		`json:"age" gorm:"age"`
+	Email	string	`json:"email" gorm:"email"`
 }
 
 func Example_Cachesql(){
 
-	gorm_manager.Init_Gorm(public.Dsn_Str, &UsrInfo_GORM_Data{})
+	gorm_manager.Init_Gorm(public.Dsn_Str, &UsrInfo{})
 
-	gorm_manager.Gorm_Create(&UsrInfo_GORM_Data{Name:"Dunty", Age:25, Email:"Dunty@gmail.com"})
+	gorm_manager.Gorm_Create(&UsrInfo{Name:"Dunty", Age:25, Email:"Dunty@gmail.com"})
 
 
 	key := "UsrInfo_Dunty"
 
 	usr_data := cachesql_manager.Get_Cache(key, func()interface{}{
-		var sql_data UsrInfo_GORM_Data
+		var sql_data UsrInfo
 		
-		gorm_manager.Gorm_Fetch_Where(&sql_data, &UsrInfo_GORM_Data{Name:"Dunty"})
+		gorm_manager.Gorm_Fetch_Where(&sql_data, &UsrInfo{Name:"Dunty"})
 
 		return sql_data
 	}, 10, 60, 20)
@@ -45,9 +39,9 @@ func Example_Cachesql(){
 	usr_info.Age = 26
 	cachesql_manager.Set_Cache(key, usr_info, 10, 60, 20)	
 	usr_data = cachesql_manager.Get_Cache(key, func()interface{}{
-		var sql_data UsrInfo_GORM_Data
+		var sql_data UsrInfo
 		
-		gorm_manager.Gorm_Fetch_Where(&sql_data, &UsrInfo_GORM_Data{Name:"Dunty"})
+		gorm_manager.Gorm_Fetch_Where(&sql_data, &UsrInfo{Name:"Dunty"})
 
 		return sql_data
 	}, 10, 60, 20)
@@ -59,9 +53,9 @@ func Example_Cachesql(){
 
 	for ;;{
 		usr_data := cachesql_manager.Get_Cache(key, func()interface{}{
-			var sql_data UsrInfo_GORM_Data
+			var sql_data UsrInfo
 			
-			gorm_manager.Gorm_Fetch_Where(&sql_data, &UsrInfo_GORM_Data{Name:"Dunty"})
+			gorm_manager.Gorm_Fetch_Where(&sql_data, &UsrInfo{Name:"Dunty"})
 
 			return sql_data
 		}, 10, 60, 20)

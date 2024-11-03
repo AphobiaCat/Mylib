@@ -56,9 +56,9 @@ func post_test(body_json string)(interface{}, bool){
 
 func Example_Route(){
 
-	get_process := route_manager.Route_Get_Processer_Info{Get_process:   get_test, Get_params: []string{"one", "two", "three"}, Err_msg: "get_test err"}
-	post_process:= route_manager.Route_Post_Processer_Info{Post_process: post_test, Err_msg: "post_test err"}
-	mid_process := route_manager.Route_Mid_Processer_Info{Process: auth_mid, Get_headers: []string{"auth", "auth2"}, Err_msg: "mid auth err"}
+	get_process := route_manager.Route_Get_Processer_Info{Get_process:   get_test	, Get_params: []string{"one", "two", "three"}	, Err_msg: "get_test err"}
+	post_process:= route_manager.Route_Post_Processer_Info{Post_process: post_test	, Err_msg: "post_test err"}
+	mid_process := route_manager.Route_Mid_Processer_Info{Process: auth_mid			, Get_headers: []string{"auth", "auth2"}		, Err_msg: "mid auth err"}
 
 	route_manager.Route_Get("get_test", 	 get_process)
 	route_manager.Route_Get("get_test2", 	 get_process, mid_process)
