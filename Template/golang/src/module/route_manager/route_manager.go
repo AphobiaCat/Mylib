@@ -1,8 +1,10 @@
-package main
+package route_manager
 
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"mylib/src/public"
 )
 
 
@@ -14,24 +16,24 @@ type Route_Manager struct{
 }
 
 type Route_Post_Processer_Info struct{
-	post_process	Route_Post_Process
+	Post_process	Route_Post_Process
 
-	err_msg			string
+	Err_msg			string
 }
 
 type Route_Get_Processer_Info struct{
-	get_process		Route_Get_Process
-	get_params		[]string
+	Get_process		Route_Get_Process
+	Get_params		[]string
 
-	err_msg			string
+	Err_msg			string
 }
 
 type Route_Mid_Processer_Info struct{
-	process			Route_Mid_Process
+	Process			Route_Mid_Process
 
-	get_headers		[]string
+	Get_headers		[]string
 
-	err_msg			string
+	Err_msg			string
 }
 
 type Route_Post_Process func(string)(interface{}, bool)
@@ -65,7 +67,7 @@ func (rm *Route_Manager) Post(api_path string, processer_infos ...interface{}){
 	rm.Init_Gin()
 
 	if len(processer_infos) != 1 && len(processer_infos) != 2{
-		DBG_ERR("process num error")
+		public.DBG_ERR("process num error")
 		return 
 	}
 
@@ -76,10 +78,10 @@ func (rm *Route_Manager) Post(api_path string, processer_infos ...interface{}){
 		body, err := context.GetRawData()
 
 		if err != nil{
-			DBG_ERR("input data no exist:", body)
+			public.DBG_ERR("input data no exist:", body)
 		}
 
-		ret, succ := processer_info.post_process(string(body))
+		ret, succ := processer_info.Post_process(string(body))
 
 		if succ{
 			context.JSON(http.StatusOK, gin.H{
@@ -89,7 +91,7 @@ func (rm *Route_Manager) Post(api_path string, processer_infos ...interface{}){
 		}else{
 			context.JSON(http.StatusOK, gin.H{
 				"code": -1,
-				"error": processer_info.err_msg,
+				"error": processer_info.Err_msg,
 			})
 		}
 	}
@@ -99,12 +101,12 @@ func (rm *Route_Manager) Post(api_path string, processer_infos ...interface{}){
 		rm.http_service.POST(api_path, post_process)	
 	}else if len(processer_infos) == 2{	//mid
 		mid_processer_info := processer_infos[1].(Route_Mid_Processer_Info)
-		rm.http_service.POST(api_path, Process_Route_Middleware_Module(mid_processer_info.process, mid_processer_info.get_headers, mid_processer_info.err_msg), post_process)	
+		rm.http_service.POST(api_path, Process_Route_Middleware_Module(mid_processer_info.Process, mid_processer_info.Get_headers, mid_processer_info.Err_msg), post_process)	
 	}else{
-		DBG_ERR("null process")
+		public.DBG_ERR("null process")
 	}
 
-	DBG_LOG("Post --> ", api_path)
+	public.DBG_LOG("Post --> ", api_path)
 }
 
 func (rm *Route_Manager) Get(api_path string, processer_infos ...interface{}){
@@ -112,7 +114,7 @@ func (rm *Route_Manager) Get(api_path string, processer_infos ...interface{}){
 	rm.Init_Gin()
 
 	if len(processer_infos) != 1 && len(processer_infos) != 2{
-		DBG_ERR("process num error")
+		public.DBG_ERR("process num error")
 		return 
 	}
 
@@ -122,15 +124,15 @@ func (rm *Route_Manager) Get(api_path string, processer_infos ...interface{}){
 
 		params := make(map[string]string)
 
-		for _, key_val := range processer_info.get_params{
+		for _, key_val := range processer_info.Get_params{
 			if val, exists := context.GetQuery(key_val); exists {
 				params[key_val] = val
 			} else {
-				DBG_ERR("key[", key_val, "] no exist")
+				public.DBG_ERR("key[", key_val, "] no exist")
 			}
 		}
 
-		ret, succ := processer_info.get_process(params)
+		ret, succ := processer_info.Get_process(params)
 
 		if succ{
 			context.JSON(http.StatusOK, gin.H{
@@ -140,7 +142,7 @@ func (rm *Route_Manager) Get(api_path string, processer_infos ...interface{}){
 		}else{
 			context.JSON(http.StatusOK, gin.H{
 				"code": -1,
-				"error": processer_info.err_msg,
+				"error": processer_info.Err_msg,
 			})
 		}
 	}
@@ -149,12 +151,12 @@ func (rm *Route_Manager) Get(api_path string, processer_infos ...interface{}){
 		rm.http_service.GET(api_path, get_process)	
 	}else if len(processer_infos) == 2{	//mid
 		mid_processer_info := processer_infos[1].(Route_Mid_Processer_Info)
-		rm.http_service.GET(api_path, Process_Route_Middleware_Module(mid_processer_info.process, mid_processer_info.get_headers, mid_processer_info.err_msg), get_process)	
+		rm.http_service.GET(api_path, Process_Route_Middleware_Module(mid_processer_info.Process, mid_processer_info.Get_headers, mid_processer_info.Err_msg), get_process)	
 	}else{
-		DBG_ERR("param error")
+		public.DBG_ERR("param error")
 	}
 
-	DBG_LOG("Get  --> ", api_path)
+	public.DBG_LOG("Get  --> ", api_path)
 }
 
 func (rm *Route_Manager) Init_Gin(){
@@ -168,11 +170,11 @@ func (rm *Route_Manager) Init_Gin(){
 func (rm *Route_Manager) Init(bind_addr string){
 
 	if !rm.have_init{
-		DBG_ERR("haven`t init")
+		public.DBG_ERR("haven`t init")
 		return 
 	}
 
-	DBG_LOG("bind addr :", bind_addr)
+	public.DBG_LOG("bind addr :", bind_addr)
 	if err := rm.http_service.Run(bind_addr); err != nil {
 		panic(err)
 	}

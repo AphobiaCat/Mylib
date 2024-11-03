@@ -2,6 +2,13 @@ package main
 
 import (
 	"time"
+	"mylib/src/example"
+	//"mylib/src/module/cachesql_manager"
+	//"mylib/src/module/gorm_manager"
+	//"mylib/src/module/http_manager"
+	//"mylib/src/module/redis_manager"
+	//"mylib/src/module/route_manager"
+	//"mylib/src/module/timer_manager"	
 )
 
 
@@ -14,12 +21,12 @@ import (
 
 func main() {
 
-	//example_redis_manager()
-	//example_json_op()
-	//example_timer_manager()
-	//example_2_gorm()
-	//example_route()
-	//example_cachesql()
+	example.Example_Redis_Manager()
+	example.Example_Json_Op()
+	example.Example_Timer_Manager()
+	example.Example_2_Gorm()
+	example.Example_Route()
+	example.Example_Cachesql()	
 
 	for {
 		//DBG_LOG("hello wolrd")
