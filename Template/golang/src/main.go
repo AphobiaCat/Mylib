@@ -2,7 +2,7 @@ package main
 
 import (
 	"time"
-	"mylib/src/example"
+	//"mylib/src/example"
 	//"mylib/src/module/cachesql_manager"
 	//"mylib/src/module/gorm_manager"
 	//"mylib/src/module/http_manager"
@@ -29,6 +29,7 @@ func main() {
 	//example.Example_Route()
 	//example.Example_Cachesql()
 	//example.Example_HTTP()
+	//example.Example_Webscoketc()
 
 	for {
 		//DBG_LOG("hello wolrd")

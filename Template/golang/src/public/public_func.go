@@ -327,7 +327,7 @@ func ConvertUint32ToHexString(num uint32) string {
 	return ReverseStr(ret_str)
 }
 
-func convertIntStrToInt(num string) int {
+func ConvertIntStrToInt(num string) int {
 
 	var ret int = 0
 	
