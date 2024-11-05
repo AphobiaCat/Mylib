@@ -339,3 +339,49 @@ func ConvertIntStrToInt(num string) int {
 }
 
 
+func next_str(T string) []int{
+	next := make([]int, len(T) + 1)
+
+	i := 1
+	j := 0
+
+	for ; i < len(T); {
+
+		if j == 0 || T[i - 1] == T[j - 1]{
+			i++
+			j++
+			next[i] = j;
+			
+		}else{
+			j = next[j];
+		}
+	}
+
+	return next
+}
+
+func Include_Str(S string, T string) int{
+    next := next_str(T);
+
+	i := 1
+	j := 1
+
+	for ; i <= len(S) && j <= len(T); {
+
+		if j == 0 || S[i - 1] == T[j - 1]{
+			i++
+			j++
+		}else{
+			j = next[j]
+		}
+	} 
+
+	if j > len(T){
+		return i - len(T)
+	}
+
+	return -1
+}
+
+
+
