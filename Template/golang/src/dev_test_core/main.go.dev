@@ -54,7 +54,7 @@ func check_file_change(){
 	}
 
 	for {
-		public.Sleep(5000)
+		public.Sleep(1000)
 
 		latestTime, err := getLatestModTime(dir)
 		if err != nil {
