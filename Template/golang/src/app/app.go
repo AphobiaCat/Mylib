@@ -24,7 +24,7 @@ import (
 
 
 
-func main() {
+func APP_Entry() {
 
 	//r, s := websocketc_manager.Init_WebSocket_Client("ws://124.222.224.186:8800", 1000)
 
@@ -38,7 +38,14 @@ func main() {
 	//example.Example_Webscoketc()
 	//example.Example_Webscokets()
 
+	public.DBG_LOG("app")
+
 	for {
+		
+		public.DBG_LOG("hello worlds")
+
+		
+	
 		public.Sleep(1000)
 	}
 }

@@ -1,0 +1,124 @@
+package main
+
+import (
+	"mylib/src/public"
+	"bufio"
+	"os/exec"
+	"fmt"
+
+    "os"
+    "time"
+    "path/filepath"
+)
+
+
+
+// ----------------Global Parameter>
+
+var change_chan chan string
+
+// ----------------Function>
+
+
+
+func getLatestModTime(dir string) (time.Time, error) {
+	latestTime := time.Time{}
+
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() { // only check file 
+		modTime := info.ModTime()
+		if modTime.After(latestTime) {
+			latestTime = modTime
+		}
+		}
+		return nil
+	})
+	
+	if err != nil {
+		return time.Time{}, err
+	}
+	return latestTime, nil
+}
+
+func check_file_change(){
+	change_msg := "files change, reload"
+
+	dir := "./src/app/"
+
+	lastCheckTime, err := getLatestModTime(dir)
+	if err != nil {
+		public.DBG_ERR("get update time error:", err)
+	}
+
+	for {
+		public.Sleep(5000)
+
+		latestTime, err := getLatestModTime(dir)
+		if err != nil {
+			public.DBG_ERR("get update time error:", err)
+		}
+
+		if latestTime.After(lastCheckTime) {
+			change_chan <- change_msg
+			lastCheckTime = latestTime
+		}
+	}
+}
+
+func main() {
+
+	change_chan = make(chan string)
+
+	go check_file_change()
+
+	for {
+		public.DBG_LOG("run here")
+
+		cmd := exec.Command("make")
+
+		public.DBG_LOG("Start compile")
+
+		compile_output, err := cmd.Output()
+		if err != nil {
+			public.DBG_ERR("compile failed :", err)
+			return
+		}
+
+		public.DBG_LOG("wait compile:", string(compile_output))
+
+
+		app := exec.Command("./target_op_file")
+
+		stdout, err := app.StdoutPipe()
+		if err != nil {
+			public.DBG_ERR("get standard output failed. err:", err)
+			return
+		}
+
+		if err := app.Start(); err != nil {
+			public.DBG_ERR("start app failed. err:", err)
+			return
+		}
+
+		go func() {
+			scanner := bufio.NewScanner(stdout)
+			for scanner.Scan() {
+				fmt.Println(scanner.Text())
+			}
+		}()
+
+		//if err := app.Wait(); err != nil {
+		//	public.DBG_ERR("app failed err:", err)
+		//}
+
+		change_msg := <- change_chan
+
+		public.DBG_LOG(change_msg)
+
+		app.Process.Kill()
+	}
+}
+

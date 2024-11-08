@@ -8,7 +8,7 @@ fi
 
 echo "build target name:$1"
 
-sed -i "2 c\TAR=$1" ./Makefile
+sed -i "1 c\TAR=$1" ./Makefile
 
 
 service_file=$1.service
