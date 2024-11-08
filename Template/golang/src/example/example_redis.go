@@ -29,12 +29,12 @@ func test1(){
 	for i := 0; i < 100; i++{
 		ret := redis_manager.Borrow_Value("test_key")
 		
-		public.Parser_Jason(ret.(string), &value)
+		public.Parser_Json(ret.(string), &value)
 
 		value.Data 		+= 1
 		value.OtherData += " h"
 
-		return_val := public.Build_Net_Jason(value)
+		return_val := public.Build_Net_Json(value)
 		
 		time.Sleep(20 * time.Millisecond)
 		redis_manager.Return_Value("test_key", return_val.String())
@@ -48,7 +48,7 @@ func Example_Redis_Manager(){
 	value.Data 		= 0
 	value.OtherData	= "hello wolrd"
 	
-	result := public.Build_Net_Jason(value)
+	result := public.Build_Net_Json(value)
 
 	redis_manager.Set_Value("test_key", result.String())
 

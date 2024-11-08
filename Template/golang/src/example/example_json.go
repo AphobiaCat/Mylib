@@ -10,7 +10,7 @@ func Example_Json_Op(){
 		"test2" : 2,
 	}
 
-	ret := public.Build_Net_Jason(obj)
+	ret := public.Build_Net_Json(obj)
 	public.DBG_LOG(ret)
 
 	type Test_Data struct{
@@ -20,7 +20,7 @@ func Example_Json_Op(){
 
 	var res Test_Data
 
-	public.Parser_Jason("{\"test\":1, \"test2\":2}", &res)
+	public.Parser_Json("{\"test\":1, \"test2\":2}", &res)
 
 	
 	public.DBG_LOG(res)

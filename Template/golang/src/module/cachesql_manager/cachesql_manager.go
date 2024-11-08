@@ -39,10 +39,9 @@ func (csm *Cache_Sql_Manager) Init(server_ip string, password string, DB int) {
 
 	if err != nil {
 		public.DBG_ERR("unable connet Redis:", err)
+	}else{
+		public.DBG_LOG("connect redis server succ")
 	}
-
-	public.DBG_LOG("connect redis server succ")
-
 }
 
 func (csm *Cache_Sql_Manager) Set_Cache(key string, value interface{}, config_time ...int64) {
@@ -56,13 +55,13 @@ func (csm *Cache_Sql_Manager) Set_Cache(key string, value interface{}, config_ti
 
 	var new_cache_data Standard_CSM_Cache
 	
-	new_cache_data.D	= public.Build_Jason(value)
+	new_cache_data.D	= public.Build_Json(value)
 	new_cache_data.L	= now_time
 	new_cache_data.LW	= 0
 	new_cache_data.W	= false
 	new_cache_data.Wait	= false
 
-	err := csm.rdb.Set(csm.ctx, key, public.Build_Jason(new_cache_data), time.Duration(max_alive_time)).Err()
+	err := csm.rdb.Set(csm.ctx, key, public.Build_Json(new_cache_data), time.Duration(max_alive_time)).Err()
 	if err != nil {
 		public.DBG_ERR("set value failed", err)
 	}
@@ -103,7 +102,7 @@ func (csm *Cache_Sql_Manager) Get_Cache(key string, new_cache_func New_Cache_Fun
 	//public.DBG_LOG("ret_val : ", ret_val)
 
 	var cache_data Standard_CSM_Cache
-	public.Parser_Jason(ret_val, &cache_data)
+	public.Parser_Json(ret_val, &cache_data)
 
 	if cache_data.Wait == true {
 		
@@ -116,7 +115,7 @@ func (csm *Cache_Sql_Manager) Get_Cache(key string, new_cache_func New_Cache_Fun
 				return ret_val
 			}
 
-			public.Parser_Jason(ret_val, &cache_data)
+			public.Parser_Json(ret_val, &cache_data)
 
 			if cache_data.D != "" {
 				break
@@ -143,7 +142,7 @@ func (csm *Cache_Sql_Manager) Get_Cache(key string, new_cache_func New_Cache_Fun
 	
 		var new_cache_data Standard_CSM_Cache
 		new_cache_data.Wait = true
-		err := csm.rdb.Set(csm.ctx, key, public.Build_Jason(new_cache_data), time.Duration(max_alive_time)).Err()
+		err := csm.rdb.Set(csm.ctx, key, public.Build_Json(new_cache_data), time.Duration(max_alive_time)).Err()
 		if err != nil {
 			public.DBG_ERR("set value failed", err)
 			return ""
@@ -158,7 +157,7 @@ func (csm *Cache_Sql_Manager) Get_Cache(key string, new_cache_func New_Cache_Fun
 
 		new_data := new_cache_func()
 
-		new_data_str := public.Build_Jason(new_data)
+		new_data_str := public.Build_Json(new_data)
 
 		now_time = public.Now_Time_S()
 
@@ -168,7 +167,7 @@ func (csm *Cache_Sql_Manager) Get_Cache(key string, new_cache_func New_Cache_Fun
 		new_cache_data.W	= false
 		new_cache_data.Wait	= false
 
-		err = csm.rdb.Set(csm.ctx, key, public.Build_Jason(new_cache_data), time.Duration(max_alive_time)).Err()
+		err = csm.rdb.Set(csm.ctx, key, public.Build_Json(new_cache_data), time.Duration(max_alive_time)).Err()
 		if err != nil {
 			public.DBG_ERR("set value failed", err)
 			return ""
@@ -186,7 +185,7 @@ func (csm *Cache_Sql_Manager) Get_Cache(key string, new_cache_func New_Cache_Fun
 		new_cache_data.W	= true
 		new_cache_data.Wait	= false
 
-		err := csm.rdb.Set(csm.ctx, key, public.Build_Jason(new_cache_data), time.Duration(max_alive_time)).Err()
+		err := csm.rdb.Set(csm.ctx, key, public.Build_Json(new_cache_data), time.Duration(max_alive_time)).Err()
 		if err != nil {
 			public.DBG_ERR("set value failed", err)
 			return ""
@@ -201,7 +200,7 @@ func (csm *Cache_Sql_Manager) Get_Cache(key string, new_cache_func New_Cache_Fun
 
 		new_data := new_cache_func()
 
-		new_data_str := public.Build_Jason(new_data)
+		new_data_str := public.Build_Json(new_data)
 
 		now_time = public.Now_Time_S()
 
@@ -211,7 +210,7 @@ func (csm *Cache_Sql_Manager) Get_Cache(key string, new_cache_func New_Cache_Fun
 		new_cache_data.W	= false
 		new_cache_data.Wait	= false
 
-		err = csm.rdb.Set(csm.ctx, key, public.Build_Jason(new_cache_data), time.Duration(max_alive_time)).Err()
+		err = csm.rdb.Set(csm.ctx, key, public.Build_Json(new_cache_data), time.Duration(max_alive_time)).Err()
 		if err != nil {
 			public.DBG_ERR("set value failed", err)
 			return new_data_str

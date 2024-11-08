@@ -1,8 +1,8 @@
 package main
 
 import (
-	"time"
 	//"mylib/src/example"
+	"mylib/src/public"
 	//"mylib/src/module/cachesql_manager"
 	//"mylib/src/module/gorm_manager"
 	//"mylib/src/module/http_manager"
@@ -11,6 +11,7 @@ import (
 	//"mylib/src/module/timer_manager"
 	//"mylib/src/module/http_manager"
 	//"mylib/src/module/websocketc_manager"
+	//"mylib/src/module/websockets_manager"
 )
 
 
@@ -21,7 +22,11 @@ import (
 // ----------------Function>
 
 
+
+
 func main() {
+
+	//r, s := websocketc_manager.Init_WebSocket_Client("ws://124.222.224.186:8800", 1000)
 
 	//example.Example_Redis_Manager()
 	//example.Example_Json_Op()
@@ -31,10 +36,9 @@ func main() {
 	//example.Example_Cachesql()
 	//example.Example_HTTP()
 	//example.Example_Webscoketc()
+	//example.Example_Webscokets()
 
 	for {
-		//DBG_LOG("hello wolrd")
-		time.Sleep(1 * time.Second)
+		public.Sleep(1000)
 	}
-	
 }

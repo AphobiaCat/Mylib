@@ -13,7 +13,7 @@ var default_headers_have_init bool = false
 
 func Post(base_url string, body_data interface{}, header_map... map[string]string) string{
 
-	req, err := http.NewRequest("POST", base_url, public.Build_Net_Jason(body_data))
+	req, err := http.NewRequest("POST", base_url, public.Build_Net_Json(body_data))
 	if err != nil {
 		public.DBG_ERR("Error creating request:", err)
 		return ""

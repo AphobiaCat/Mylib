@@ -11,10 +11,10 @@ import(
 		"test1" : 1,
 		"test2" : 2,
 	}
-	ret := Build_Net_Jason(obj)
+	ret := Build_Net_Json(obj)
 */
 
-func Build_Jason(obj interface{}) string{
+func Build_Json(obj interface{}) string{
 
     jsonData, err := json.Marshal(obj)
 	if err != nil {
@@ -25,7 +25,7 @@ func Build_Jason(obj interface{}) string{
 }
 
 
-func Build_Net_Jason(obj interface{}) *bytes.Buffer{
+func Build_Net_Json(obj interface{}) *bytes.Buffer{
 
     jsonData, err := json.Marshal(obj)
 	if err != nil {
@@ -37,10 +37,10 @@ func Build_Net_Jason(obj interface{}) *bytes.Buffer{
 	return bytes.NewBuffer(jsonData)
 }
 
-func Parser_Jason(message string, res interface{}) {
+func Parser_Json(message string, res interface{}) {
 
 	/*
-	type Parser_Jason_Test_Data struct{
+	type Parser_Json_Test_Data struct{
 		Code	int		`json:"code"`
 		Encode	uint32	`json:"encode"`
 	}

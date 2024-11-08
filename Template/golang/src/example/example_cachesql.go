@@ -30,7 +30,7 @@ func Example_Cachesql(){
 	}, 10, 60, 20)
 
 	var usr_info UsrInfo
-	public.Parser_Jason(usr_data, &usr_info)
+	public.Parser_Json(usr_data, &usr_info)
 	public.DBG_LOG(usr_info)
 
 
@@ -46,7 +46,7 @@ func Example_Cachesql(){
 		return sql_data
 	}, 10, 60, 20)
 
-	public.Parser_Jason(usr_data, &usr_info)
+	public.Parser_Json(usr_data, &usr_info)
 	public.DBG_LOG(usr_info)
 
 
@@ -61,7 +61,7 @@ func Example_Cachesql(){
 		}, 10, 60, 20)
 
 		var usr_info UsrInfo
-		public.Parser_Jason(usr_data, &usr_info)
+		public.Parser_Json(usr_data, &usr_info)
 		public.DBG_LOG(usr_info)
 
 		public.Sleep(1000)

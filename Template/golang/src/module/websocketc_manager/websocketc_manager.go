@@ -41,39 +41,56 @@ func (client *WebSocket_Client_Manager) connect() error {
 }
 
 func (client *WebSocket_Client_Manager) init_chan() (chan string, chan string){
-	client.recv_msg = make(chan string)
-	client.send_msg = make(chan string)
+	client.recv_msg = make(chan string, 10)
+	client.send_msg = make(chan string, 10)
 
 	return client.recv_msg, client.send_msg
 }
 
 func (client *WebSocket_Client_Manager) reconnect() {
-	client.isConnected		= false
-	client.underReconnect	= true
-	for {
-	
-		public.DBG_LOG("Attempting to reconnect...")
-		err := client.connect()
-		if err == nil {
-			return
-		}
-		public.DBG_ERR("Reconnect failed:", err)
-		public.Sleep(client.reconnectInterval)
+
+	if client.underReconnect == false{
+		client.isConnected		= false
+		client.underReconnect	= true
+		for {
 		
+			public.DBG_LOG("Attempting to reconnect...")
+			err := client.connect()
+			if err == nil {
+				return
+			}
+			public.DBG_ERR("Reconnect failed:", err)
+			public.Sleep(client.reconnectInterval)
+		}
+	}else{
+		for client.underReconnect{
+			public.Sleep(1000)
+
+			public.DBG_LOG("wait reconnect")
+		}
 	}
 }
 
 
 func (client *WebSocket_Client_Manager) ReadMessages() {
+
+	defer func(){
+		if r := recover(); r != nil {
+			public.DBG_ERR("ReadMessages err:", r)
+
+			client.reconnect()
+
+			go client.ReadMessages()
+		}
+	}()
+
 	for {
 		_, message, err := client.conn.ReadMessage()
 		if err != nil {
 			public.DBG_ERR("Read error:", err)
 			client.conn.Close()
 
-			if !client.underReconnect{
-				client.reconnect()
-			}			
+			client.reconnect()
 			
 			public.Sleep(1000)
 			continue
@@ -84,32 +101,42 @@ func (client *WebSocket_Client_Manager) ReadMessages() {
 
 
 func (client *WebSocket_Client_Manager) SendMessages() {
-	for {
-		message := <- client.send_msg
 
-		for !client.isConnected {
-			public.DBG_ERR("not connected to WebSocket server")
-			public.Sleep(1000)
+	var message string
+
+	defer func(){
+		if r := recover(); r != nil {
+			public.DBG_ERR("SendMessages err:", r)
+
+			client.reconnect()
+
+			client.send_msg <- message
+			
+			go client.SendMessages()
 		}
+	}()
+
+	for {
+
+		message = <- client.send_msg
 		
 		err := client.conn.WriteMessage(websocket.TextMessage, []byte(message))
 		if err != nil {
 			public.DBG_ERR("Write error:", err)
 			client.conn.Close()
 
-			if !client.underReconnect{
-				client.reconnect()
-			}
+			client.reconnect()
+
 		}
 	}
 }
 
-func WebsocketC_Init(serverURL string, reconnectInterval_ms int) (chan string, chan string){
+func Init_WebSocket_Client(serverURL string, reconnectInterval_ms int) (chan string, chan string){
 
 	client := &WebSocket_Client_Manager{
 		url					: serverURL,
 		reconnectInterval	: reconnectInterval_ms,
-		underReconnect		: true,
+		underReconnect		: false,
 	}
 
 	err := client.connect()

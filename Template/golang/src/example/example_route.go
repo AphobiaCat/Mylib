@@ -46,7 +46,7 @@ func post_test(body_json string)(interface{}, bool){
 
 	var login_data Login_Data
 
-	public.Parser_Jason(body_json, &login_data)
+	public.Parser_Json(body_json, &login_data)
 
 	public.DBG_LOG(login_data)
 
