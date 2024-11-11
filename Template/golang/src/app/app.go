@@ -15,13 +15,10 @@ import (
 )
 
 
-
 // ----------------Global Parameter>
 
 
 // ----------------Function>
-
-
 
 
 func APP_Entry() {
@@ -42,9 +39,7 @@ func APP_Entry() {
 
 	for {
 		
-		public.DBG_LOG("hello worlds")
-
-		
+		public.DBG_LOG("hello world")
 	
 		public.Sleep(1000)
 	}
