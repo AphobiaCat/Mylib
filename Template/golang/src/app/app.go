@@ -23,8 +23,6 @@ import (
 
 func APP_Entry() {
 
-	//r, s := websocketc_manager.Init_WebSocket_Client("ws://124.222.224.186:8800", 1000)
-
 	//example.Example_Redis_Manager()
 	//example.Example_Json_Op()
 	//example.Example_Timer_Manager()
@@ -40,7 +38,7 @@ func APP_Entry() {
 	for {
 		
 		public.DBG_LOG("hello world")
-	
+
 		public.Sleep(1000)
 	}
 }
