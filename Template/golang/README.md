@@ -6,3 +6,7 @@ how to use:
 make type   
 all: build release version  
 dev: build dev version - auto rebuild and run when dev version is working  
+
+change config in  
+./src/public/env.go.dev  
+./src/public/env.go.product  
