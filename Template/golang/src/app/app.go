@@ -20,7 +20,6 @@ import (
 
 // ----------------Function>
 
-
 func APP_Entry() {
 
 	//example.Example_Redis_Manager()
@@ -34,7 +33,7 @@ func APP_Entry() {
 	//example.Example_Webscokets()
 
 	public.DBG_LOG("app")
-
+	
 	for {
 		
 		public.DBG_LOG("hello world")

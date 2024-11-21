@@ -83,12 +83,10 @@ func main() {
 
 		compile_output, err := cmd.Output()
 		if err != nil {
-			public.DBG_ERR("compile failed :", err)
-			return
+			public.DBG_ERR("compile failed :", err, "  continue run old file")
+		}else{
+			public.DBG_LOG("wait compile:", string(compile_output))
 		}
-
-		public.DBG_LOG("wait compile:", string(compile_output))
-
 
 		app := exec.Command("./target_op_file")
 

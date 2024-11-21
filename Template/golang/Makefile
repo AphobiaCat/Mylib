@@ -21,6 +21,18 @@ all:
 	${BUILD_CMD} -o ${TAR} ${SRC}
 	
 	rm -rf ${SRC}
+
+debug:
+	cp ${ENV_FILE_PRODUCT} ${ENV_FILE}
+
+	cp ${APP_MAIN_PATH} ${SRC}
+
+	echo "`sed 's/${ENTRY}/main/g' ${SRC}`" > ${SRC}
+
+	${BUILD_CMD} -gcflags="all=-N -l" -o ${TAR} ${SRC}
+
+	#rm -rf ${SRC}
+
 dev:
 	cp ${ENV_FILE_DEV} ${ENV_FILE}
 	
