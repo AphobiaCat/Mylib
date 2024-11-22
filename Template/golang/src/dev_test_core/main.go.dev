@@ -75,15 +75,26 @@ func main() {
 	go check_file_change()
 
 	for {
-		public.DBG_LOG("run here")
 
-		cmd := exec.Command("make")
+		cmd := exec.Command("sh", "-c", "make > tmp.txt 2>&1")
 
 		public.DBG_LOG("Start compile")
 
 		compile_output, err := cmd.Output()
 		if err != nil {
-			public.DBG_ERR("compile failed :", err, "  continue run old file")
+			public.DBG_ERR("compile failed :", err)
+
+			cmd = exec.Command("cat", "tmp.txt")
+		    compile_output, err = cmd.Output()
+		    if err != nil {
+		        public.DBG_ERR("read tmp.txt error: ", err)
+		    } else {
+		        public.DBG_ERR("make error : ", string(compile_output))
+		    }
+
+		    exec.Command("rm", "-rf", "tmp.txt").Run()
+
+		    public.DBG_ERR("continue run old")
 		}else{
 			public.DBG_LOG("wait compile:", string(compile_output))
 		}

@@ -15,31 +15,9 @@ type Route_Manager struct{
 	have_init		bool
 }
 
-type Route_Post_Processer_Info struct{
-	Post_process	Route_Post_Process
-
-	Err_msg			string
-}
-
-type Route_Get_Processer_Info struct{
-	Get_process		Route_Get_Process
-	Get_params		[]string
-
-	Err_msg			string
-}
-
-type Route_Mid_Processer_Info struct{
-	Process			Route_Mid_Process
-
-	Get_headers		[]string
-
-	Err_msg			string
-}
-
 type Route_Post_Process func(string)(interface{}, bool)
 type Route_Get_Process func(map[string]string)(interface{}, bool)
 type Route_Mid_Process func(map[string]string)bool
-
 
 func Process_Route_Middleware_Module(process Route_Mid_Process, need_header []string, err_info string) gin.HandlerFunc{
 	return func(c *gin.Context) {
@@ -66,14 +44,49 @@ func (rm *Route_Manager) Post(api_path string, processer_infos ...interface{}){
 
 	rm.Init_Gin()
 
-	if len(processer_infos) != 1 && len(processer_infos) != 2{
-		public.DBG_ERR("process num error")
+	var post_process	Route_Post_Process
+	var post_err_msg	string
+		
+	var mid_process		Route_Mid_Process
+	var mid_headers		[]string
+	var mid_err_msg		string
+	
+	who_params := ""
+
+	for _, val := range processer_infos{
+
+		switch val.(type){
+			case func(string)(interface{}, bool):
+				post_process = val.(func(string)(interface{}, bool))
+				who_params = "post"
+
+			case func(map[string]string)bool:
+				mid_process = val.(func(map[string]string)bool)		
+				who_params = "mid"
+
+			case []string:
+				if who_params == "post"{
+					
+				}else if who_params == "mid"{
+					mid_headers = val.([]string)
+				}
+
+			case string:
+				if who_params == "post"{
+					post_err_msg = val.(string)
+				}else if who_params == "mid"{
+					mid_err_msg = val.(string)
+				}
+		}
+
+	}
+
+	if post_process == nil{
+		public.DBG_ERR("post process no exist")
 		return 
 	}
 
-	processer_info := processer_infos[0].(Route_Post_Processer_Info)
-
-	post_process := func(context *gin.Context){
+	post_route_process := func(context *gin.Context){
 
 		body, err := context.GetRawData()
 
@@ -81,7 +94,7 @@ func (rm *Route_Manager) Post(api_path string, processer_infos ...interface{}){
 			public.DBG_ERR("input data no exist:", body)
 		}
 
-		ret, succ := processer_info.Post_process(string(body))
+		ret, succ := post_process(string(body))
 
 		if succ{
 			context.JSON(http.StatusOK, gin.H{
@@ -91,19 +104,16 @@ func (rm *Route_Manager) Post(api_path string, processer_infos ...interface{}){
 		}else{
 			context.JSON(http.StatusOK, gin.H{
 				"code": -1,
-				"error": processer_info.Err_msg,
+				"error": post_err_msg,
 			})
 		}
 	}
 
 
-	if len(processer_infos) == 1{
-		rm.http_service.POST(api_path, post_process)	
-	}else if len(processer_infos) == 2{	//mid
-		mid_processer_info := processer_infos[1].(Route_Mid_Processer_Info)
-		rm.http_service.POST(api_path, Process_Route_Middleware_Module(mid_processer_info.Process, mid_processer_info.Get_headers, mid_processer_info.Err_msg), post_process)	
+	if mid_process != nil{
+		rm.http_service.POST(api_path, Process_Route_Middleware_Module(mid_process, mid_headers, mid_err_msg), post_route_process)	
 	}else{
-		public.DBG_ERR("null process")
+		rm.http_service.POST(api_path, post_route_process)
 	}
 
 	public.DBG_LOG("Post --> ", api_path)
@@ -113,18 +123,58 @@ func (rm *Route_Manager) Get(api_path string, processer_infos ...interface{}){
 
 	rm.Init_Gin()
 
-	if len(processer_infos) != 1 && len(processer_infos) != 2{
-		public.DBG_ERR("process num error")
+	var get_process Route_Get_Process
+	var get_params	[]string
+	var get_err_msg string
+		
+	var mid_process Route_Mid_Process
+	var mid_headers	[]string
+	var mid_err_msg string
+	
+	
+	who_params := ""
+
+	for _, val := range processer_infos{
+
+		switch val.(type){
+			case func(map[string]string)(interface{}, bool):
+				get_process = val.(func(map[string]string)(interface{}, bool))
+				who_params = "get"
+
+			case func(map[string]string)bool:
+				mid_process = val.(func(map[string]string)bool)	
+				who_params = "mid"
+
+			case []string:
+				if who_params == "get"{
+					get_params = val.([]string)
+				}else if who_params == "mid"{
+					mid_headers = val.([]string)
+				}
+
+			case string:
+				if who_params == "get"{
+					get_err_msg = val.(string)
+				}else if who_params == "mid"{
+					mid_err_msg = val.(string)
+				}
+
+			default:
+				public.DBG_ERR("err info:", val)
+		}
+
+	}
+
+	if get_process == nil{
+		public.DBG_ERR("get process no exist")
 		return 
 	}
 
-	processer_info := processer_infos[0].(Route_Get_Processer_Info)
-
-	get_process := func(context *gin.Context){
+	get_route_process := func(context *gin.Context){
 
 		params := make(map[string]string)
 
-		for _, key_val := range processer_info.Get_params{
+		for _, key_val := range get_params{
 			if val, exists := context.GetQuery(key_val); exists {
 				params[key_val] = val
 			} else {
@@ -132,7 +182,7 @@ func (rm *Route_Manager) Get(api_path string, processer_infos ...interface{}){
 			}
 		}
 
-		ret, succ := processer_info.Get_process(params)
+		ret, succ := get_process(params)
 
 		if succ{
 			context.JSON(http.StatusOK, gin.H{
@@ -142,19 +192,18 @@ func (rm *Route_Manager) Get(api_path string, processer_infos ...interface{}){
 		}else{
 			context.JSON(http.StatusOK, gin.H{
 				"code": -1,
-				"error": processer_info.Err_msg,
+				"error": get_err_msg,
 			})
 		}
 	}
 
-	if len(processer_infos) == 1{
-		rm.http_service.GET(api_path, get_process)	
-	}else if len(processer_infos) == 2{	//mid
-		mid_processer_info := processer_infos[1].(Route_Mid_Processer_Info)
-		rm.http_service.GET(api_path, Process_Route_Middleware_Module(mid_processer_info.Process, mid_processer_info.Get_headers, mid_processer_info.Err_msg), get_process)	
+
+	if mid_process != nil{
+		rm.http_service.GET(api_path, Process_Route_Middleware_Module(mid_process, mid_headers, mid_err_msg), get_route_process)	
 	}else{
-		public.DBG_ERR("param error")
+		rm.http_service.GET(api_path, get_route_process)	
 	}
+
 
 	public.DBG_LOG("Get  --> ", api_path)
 }
@@ -189,5 +238,5 @@ func Route_Get(api_path string, processer_infos ...interface{}){
 }
 
 func Init_Route(bind_addr string){
-	go route_manager.Init(bind_addr)
+	route_manager.Init(bind_addr)
 }
