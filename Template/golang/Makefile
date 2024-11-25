@@ -23,7 +23,7 @@ all:
 	rm -rf ${SRC}
 
 debug:
-	cp ${ENV_FILE_PRODUCT} ${ENV_FILE}
+	cp ${ENV_FILE_DEV} ${ENV_FILE}
 
 	cp ${APP_MAIN_PATH} ${SRC}
 

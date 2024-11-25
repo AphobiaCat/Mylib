@@ -76,7 +76,7 @@ func main() {
 
 	for {
 
-		cmd := exec.Command("sh", "-c", "make > tmp.txt 2>&1")
+		cmd := exec.Command("sh", "-c", "make debug > tmp.txt 2>&1")
 
 		public.DBG_LOG("Start compile")
 
