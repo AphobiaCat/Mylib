@@ -96,6 +96,8 @@ func main() {
 
 		    public.DBG_ERR("continue run old")
 		}else{
+			exec.Command("rm", "-rf", "tmp.txt").Run()
+			
 			public.DBG_LOG("wait compile:", string(compile_output))
 		}
 
