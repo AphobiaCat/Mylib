@@ -43,6 +43,8 @@ func getLatestModTime(dir string) (time.Time, error) {
 	return latestTime, nil
 }
 
+var under_build bool
+
 func check_file_change(){
 	change_msg := "files change, reload"
 
@@ -52,8 +54,6 @@ func check_file_change(){
 	if err != nil {
 		public.DBG_ERR("get update time error:", err)
 	}
-	
-	under_build := false
 
 	for {
 		public.Sleep(1000)
@@ -68,14 +68,12 @@ func check_file_change(){
 				change_chan <- change_msg
 				lastCheckTime = latestTime
 			}
-			under_build = true
-		}else{
-			under_build = false
 		}
 	}
 }
 
 func main() {
+	under_build = true
 
 	change_chan = make(chan string)
 
@@ -83,6 +81,7 @@ func main() {
 
 	for {
 
+		under_build = true
 		cmd := exec.Command("sh", "-c", "make debug > tmp.txt 2>&1")
 
 		public.DBG_LOG("Start compile")
@@ -131,6 +130,8 @@ func main() {
 		//if err := app.Wait(); err != nil {
 		//	public.DBG_ERR("app failed err:", err)
 		//}
+
+		under_build = false
 
 		change_msg := <- change_chan
 
