@@ -52,6 +52,8 @@ func check_file_change(){
 	if err != nil {
 		public.DBG_ERR("get update time error:", err)
 	}
+	
+	under_build := false
 
 	for {
 		public.Sleep(1000)
@@ -60,10 +62,15 @@ func check_file_change(){
 		if err != nil {
 			public.DBG_ERR("get update time error:", err)
 		}
-
-		if latestTime.After(lastCheckTime) {
-			change_chan <- change_msg
-			lastCheckTime = latestTime
+		
+		if !under_build{
+			if latestTime.After(lastCheckTime) {
+				change_chan <- change_msg
+				lastCheckTime = latestTime
+			}
+			under_build = true
+		}else{
+			under_build = false
 		}
 	}
 }
