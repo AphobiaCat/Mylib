@@ -35,7 +35,7 @@ func Process_Route_Middleware_Module(process Route_Mid_Process, need_header []st
 
 		}else{
 			c.JSON(http.StatusUnauthorized, gin.H{"error": err_info})
-			c.Abort() // 阻止请求继续传递
+			c.Abort()
 		}     
 	}
 }
