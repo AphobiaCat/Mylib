@@ -12,6 +12,7 @@ import (
 	//"mylib/src/module/http_manager"
 	//"mylib/src/module/websocketc_manager"
 	//"mylib/src/module/websockets_manager"
+	//"mylib/src/module/file_manager"
 )
 
 
@@ -31,6 +32,7 @@ func APP_Entry() {
 	//example.Example_HTTP()
 	//example.Example_Webscoketc()
 	//example.Example_Webscokets()
+	//example.Example_file()
 
 	public.DBG_LOG("app")
 	
