@@ -71,3 +71,59 @@ func Base58Hash2Uint64(base58Hash string)[]uint64{
 
 }
 
+type quick_sort_type interface {
+	GetNum() int32
+}
+
+func QuickSortStruct[T quick_sort_type](sort_array []T) []T {
+	now_pos := 0
+	i := 0
+	k := len(sort_array) - 1
+
+	for i < k {
+		for now_pos < k {
+			if sort_array[now_pos].GetNum() <= sort_array[k].GetNum() {
+				k -= 1
+				continue
+			} else {
+				tmp := sort_array[k]
+				sort_array[k] = sort_array[now_pos]
+				sort_array[now_pos] = tmp
+				now_pos = k
+				k -= 1
+				break
+			}
+		}
+
+		for now_pos > i {
+			if sort_array[now_pos].GetNum() >= sort_array[i].GetNum() {
+				i += 1
+				continue
+			} else {
+				tmp := sort_array[i]
+				sort_array[i] = sort_array[now_pos]
+				sort_array[now_pos] = tmp
+				now_pos = i
+				i += 1
+				break
+			}
+		}
+	}
+
+	var front, last []T
+
+	if now_pos > 0 {
+		front = QuickSort(sort_array[0:now_pos])
+	}
+	if now_pos+1 < len(sort_array) {
+		last = QuickSort(sort_array[now_pos+1 : len(sort_array)])
+	}
+
+	ret := front
+	ret = append(ret, sort_array[now_pos])
+	ret = append(ret, last...)
+
+	return ret
+}
+
+

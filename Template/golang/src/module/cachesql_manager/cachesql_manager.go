@@ -45,10 +45,10 @@ func (csm *Cache_Sql_Manager) Init(server_ip string, password string, DB int) {
 }
 
 func (csm *Cache_Sql_Manager) Set_Cache(key string, value interface{}, config_time ...int64) {
-	max_alive_time 		:= int64(60 * 10)
+	max_alive_time 		:= int64(1000 * 1000 * 1000 * 60 * 10)
 
 	if len(config_time) == 1{
-		max_alive_time	= config_time[2]
+		max_alive_time	= config_time[0] * 1000 * 1000 * 1000
 	}
 
 	now_time := public.Now_Time_S()
