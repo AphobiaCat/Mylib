@@ -14,6 +14,7 @@ how to use:
 make type   
 all: build release version  
 dev: build dev version - auto rebuild and run when dev version is working  
+debug: build debug version, No compilation optimizations  
 
 change config in  
 ./src/public/env.go.dev  
