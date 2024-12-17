@@ -113,10 +113,10 @@ func QuickSortStruct[T quick_sort_type](sort_array []T) []T {
 	var front, last []T
 
 	if now_pos > 0 {
-		front = QuickSort(sort_array[0:now_pos])
+		front = QuickSortStruct(sort_array[0:now_pos])
 	}
 	if now_pos+1 < len(sort_array) {
-		last = QuickSort(sort_array[now_pos+1 : len(sort_array)])
+		last = QuickSortStruct(sort_array[now_pos+1 : len(sort_array)])
 	}
 
 	ret := front

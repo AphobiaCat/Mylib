@@ -6,10 +6,13 @@ import(
 	"net/url"
 
 	"mylib/src/public"
+	"time"
 )
 
 var default_headers map[string]string
 var default_headers_have_init bool = false
+
+var req_timeout time.Duration
 
 func Post(base_url string, body_data interface{}, header_map... map[string]string) string{
 
@@ -29,7 +32,9 @@ func Post(base_url string, body_data interface{}, header_map... map[string]strin
 		}
 	}
 
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: req_timeout,
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		public.DBG_ERR("Error making request:", err)
@@ -83,7 +88,9 @@ func Get(base_url string, params... map[string]string) string{
 		}
 	}
 
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: req_timeout,
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		public.DBG_ERR("Error making request:", err)
@@ -114,5 +121,13 @@ func Set_Default_Headers(header_map map[string]string){
 	for key, val := range header_map{
 		default_headers[key] = val
 	}
+}
+
+func Set_Default_Timeout(timeout_sec int){
+	req_timeout = time.Duration(timeout_sec * 1000 * 1000 * 1000)
+}
+
+func init(){
+	req_timeout = time.Duration(30 * 1000 * 1000 * 1000)
 }
 

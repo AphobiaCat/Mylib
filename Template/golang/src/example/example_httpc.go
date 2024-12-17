@@ -19,6 +19,7 @@ func Example_HTTP(){
 	default_headers["auth2"] = "world"
 
 	hm.Set_Default_Headers(default_headers)
+	hm.Set_Default_Timeout(60)
 
 	get_params := make(map[string]string)
 
