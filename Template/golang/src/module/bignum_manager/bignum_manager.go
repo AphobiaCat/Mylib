@@ -5,6 +5,7 @@ import (
 	"math/big"
 
 	"fmt"
+	"strconv"
 )
 
 type calc_item struct{
@@ -291,4 +292,15 @@ func Calc(calc_item ...interface{}) string{
 	return num_mid.calc()
 }
 
+func Calc_Keep_Point(calc_item ...interface{}) string{
+	ret := Calc(calc_item...)
+
+	floatVal, err := strconv.ParseFloat(ret, 64)
+	if err != nil {
+		public.DBG_LOG("ParseFloat err:", err)
+		return ""
+	}
+	
+	return strconv.FormatFloat(floatVal, 'f', -1, 64)
+}
 
