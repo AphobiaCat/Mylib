@@ -106,7 +106,6 @@ func (csm *Cache_Sql_Manager) Get_Cache(key string, new_cache_func New_Cache_Fun
 
 	if cache_data.Wait == true {
 		
-		//public.DBG_LOG("PAHT CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC")
 		for ;;{
 			ret_val, err := csm.rdb.Get(csm.ctx, key).Result()
 
@@ -137,8 +136,6 @@ func (csm *Cache_Sql_Manager) Get_Cache(key string, new_cache_func New_Cache_Fun
 	}
 
 	if cache_data.D == "" {
-		//public.DBG_LOG("PAHT AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa")
-
 	
 		var new_cache_data Standard_CSM_Cache
 		new_cache_data.Wait = true
@@ -176,8 +173,7 @@ func (csm *Cache_Sql_Manager) Get_Cache(key string, new_cache_func New_Cache_Fun
 		return new_data_str
 
 	} else if ((now_time - cache_data.L >= force_update_time) && !cache_data.W) || ((cache_data.LW != 0) && (now_time - cache_data.LW >= max_work_time)) {		
-		//public.DBG_LOG("PAHT BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB")
-
+		
 		var new_cache_data Standard_CSM_Cache
 		new_cache_data.D	= cache_data.D
 		new_cache_data.L	= now_time
