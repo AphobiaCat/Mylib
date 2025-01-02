@@ -10,6 +10,8 @@ echo "build target name:$1"
 
 sed -i "1 c\TAR=$1" ./Makefile
 
+sed -i "3 c\var Database_Name string = \"$1\"" ./src/public/env.go.dev
+sed -i "3 c\var Database_Name string = \"$1\"" ./src/public/env.go.product
 
 service_file=$1.service
 
