@@ -124,7 +124,7 @@ func Example_2_Gorm(){
 	public.DBG_LOG(comment_of_mint)
 
 	var comment_of_user User
-	gorm_manager.Gorm_Foreign_Where(&comment_of_user, &User{Name:"Dunty"}, "Comments")
+	gorm_manager.Gorm_Foreign_Where(&comment_of_user, &User{Name:"Dunty"}, []string{"Comments"})
 	public.DBG_LOG(comment_of_user)
 
 	var foregin_use User
@@ -132,7 +132,7 @@ func Example_2_Gorm(){
 	public.DBG_LOG(foregin_use)
 
 	var comment_and_sub_comment_of_mint []Comment
-	gorm_manager.Gorm_Foreign_Where(&comment_and_sub_comment_of_mint, &Comment{Mint:"0x1"}, "Replies")
+	gorm_manager.Gorm_Foreign_Where(&comment_and_sub_comment_of_mint, &Comment{Mint:"0x1"}, []string{"Replies"})
 	public.DBG_LOG(comment_and_sub_comment_of_mint)
 }
 

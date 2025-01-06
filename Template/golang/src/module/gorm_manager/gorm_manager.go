@@ -85,8 +85,12 @@ func (gm *Gorm_Manager) Fetch_Where(fetched_data interface{}, where_data interfa
 	return result.Error
 }
 
-func (gm *Gorm_Manager) Foreign_Where(fetched_data interface{}, where_data interface{}, foreign_volume string, conds ...interface{}) error{
-	result := gm.db.Preload(foreign_volume).Where(where_data).Find(fetched_data, conds...)
+func (gm *Gorm_Manager) Foreign_Where(fetched_data interface{}, where_data interface{}, foreign_volume []string, conds ...interface{}) error{
+	query := gm.db
+	for _, volume := range foreign_volume {
+	    query = query.Preload(volume)
+	}
+	result := query.Where(where_data).Find(fetched_data, conds...)
 
 	if result.Error != nil {
 		public.DBG_ERR("Error:", result.Error)
@@ -149,7 +153,7 @@ func Gorm_Fetch_Where(fetched_data interface{}, where_data interface{}) error{
 	return gorm_manager.Fetch_Where(fetched_data, where_data)
 }
 
-func Gorm_Foreign_Where(fetched_data interface{}, where_data interface{}, foreign_volume string, conds ...interface{}) error{
+func Gorm_Foreign_Where(fetched_data interface{}, where_data interface{}, foreign_volume []string, conds ...interface{}) error{
 	return gorm_manager.Foreign_Where(fetched_data, where_data, foreign_volume, conds...)
 }
 
