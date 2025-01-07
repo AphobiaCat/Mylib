@@ -125,6 +125,14 @@ func (gm *Gorm_Manager) Delete(data interface{}) error{
 	return result.Error
 }
 
+func (gm *Gorm_Manager) SQL_Query(fetched_data interface{}, query string, datas ...interface{}) error{
+    result := gm.db.Raw(query, datas...).Scan(fetched_data)
+
+    if result.Error != nil {
+		public.DBG_ERR("Error:", result.Error)
+	}
+	return result.Error
+}
 
 
 //------------------------------API---------------------------------
@@ -169,5 +177,8 @@ func Gorm_Delete(data interface{}) error{
 	return gorm_manager.Delete(data)
 }
 
+func Gorm_SQL_Query(fetched_data interface{}, query string, datas ...interface{}) error{
+	return gorm_manager.SQL_Query(fetched_data, query, datas...)
+}
 
 
