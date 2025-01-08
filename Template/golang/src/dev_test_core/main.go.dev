@@ -57,13 +57,14 @@ func check_file_change(){
 
 	for {
 		public.Sleep(1000)
-
-		latestTime, err := getLatestModTime(dir)
-		if err != nil {
-			public.DBG_ERR("get update time error:", err)
-		}
 		
 		if !under_build{
+		
+			latestTime, err := getLatestModTime(dir)
+			if err != nil {
+				public.DBG_ERR("get update time error:", err)
+			}
+		
 			if latestTime.After(lastCheckTime) {
 				change_chan <- change_msg
 				lastCheckTime = latestTime
