@@ -108,10 +108,10 @@ func (gm *Gorm_Manager) Update(data interface{}, volume string, new_data interfa
 }
 
 func (gm *Gorm_Manager) Updates(data interface{}, new_data interface{}) error{
-    result := gm.db.Model(data).Updates(new_data)
+	result := gm.db.Model(data).Select("*").Updates(new_data)
 
-    if result.Error != nil {
-		public.DBG_ERR("Error:", result.Error)
+	if result.Error != nil {
+	    public.DBG_ERR("Error:", result.Error)
 	}
 	return result.Error
 }
