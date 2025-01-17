@@ -50,6 +50,7 @@ func (wsc *Ws_Client) Send_Msg(msg string) bool{
 		if err := wsc.conn.WriteMessage(websocket.TextMessage, []byte(msg)); err != nil {
 	    	public.DBG_ERR(err)
 	    	wsc.Close()
+	    	return false
 		}
 		return true
 	}
@@ -109,7 +110,7 @@ func init_websocket_server(bind_ip_port string){
 
 	http.HandleFunc("/ws", wsHandler)
 
-	public.DBG_LOG("Server started on :", bind_ip_port)
+	public.DBG_LOG("Websocket Server started on :", bind_ip_port)
     
 	ret := http.Serve(listener, nil)
 	
