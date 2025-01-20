@@ -22,6 +22,9 @@ After=network.target
 [Service]
 ExecStart=/usr/bin/$1
 Restart=always
+RestartSec=3
+StartLimitInterval=0
+StartLimitBurst=0
 User=nobody
 Group=nogroup
 
