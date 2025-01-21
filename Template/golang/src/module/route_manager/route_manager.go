@@ -104,8 +104,10 @@ func (rm *Route_Manager) Post(api_path string, processer_infos ...interface{}){
 		}else{
 			context.JSON(http.StatusOK, gin.H{
 				"code": -1,
-				"error": post_err_msg,
+				"error": ret,
 			})
+			
+			public.DBG_ERR(post_err_msg, " --> ", ret)
 		}
 	}
 
@@ -192,8 +194,10 @@ func (rm *Route_Manager) Get(api_path string, processer_infos ...interface{}){
 		}else{
 			context.JSON(http.StatusOK, gin.H{
 				"code": -1,
-				"error": get_err_msg,
+				"error": ret,
 			})
+
+			public.DBG_ERR(get_err_msg, " --> ", ret)
 		}
 	}
 

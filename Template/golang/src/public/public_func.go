@@ -101,7 +101,7 @@ func DBG_ERR(v ...interface{}) {
 		outputStr += ConvertToString(val)
 	}
 
-	fmt.Println(outputStr)
+	fmt.Println("\033[1;31m" + outputStr + "\033[0m")
 }
 
 func SplitStrAfterChar(str string, cutAfter rune) (string, string) {
