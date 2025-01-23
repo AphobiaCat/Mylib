@@ -25,7 +25,7 @@ func (client *WebSocket_Client_Manager) connect() error {
 	// can add auth msg
 	// header.Set("Authorization", "Bearer your_token_here")
 
-	public.DBG_LOG("try to connect ws", client.url)
+	public.DBG_LOG("try to connect :", client.url)
 
 	var err error
 	client.conn, _, err = websocket.DefaultDialer.Dial(client.url, header)
