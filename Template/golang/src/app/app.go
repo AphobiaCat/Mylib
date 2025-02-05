@@ -14,6 +14,7 @@ import (
 	//"mylib/src/module/websockets_manager"
 	//"mylib/src/module/file_manager"
 	//"mylib/src/module/bignum_manager"
+	//"mylib/src/module/socket_manager"
 )
 
 
@@ -35,6 +36,7 @@ func APP_Entry() {
 	//example.Example_Webscokets()
 	//example.Example_file()
 	//example.Example_bitnum()
+	//example.Example_socket()
 
 	public.DBG_LOG("app")
 
