@@ -210,7 +210,7 @@ func process_string_calc(calc_str string)mid_calc{
 			var k int
 			for k = i; k < len_of_calc; k++ {
 				tmp_val := calc_str[k]
-				if (tmp_val >= '0' && tmp_val <= '9') || (tmp_val >= 'a' && tmp_val <= 'f') || (tmp_val >= 'A' && tmp_val <= 'F') || tmp_val == 'x'{
+				if (tmp_val >= '0' && tmp_val <= '9') || (tmp_val >= 'a' && tmp_val <= 'f') || (tmp_val >= 'A' && tmp_val <= 'F') || tmp_val == 'x' || tmp_val == '.'{
 					continue
 				} else {
 					break
