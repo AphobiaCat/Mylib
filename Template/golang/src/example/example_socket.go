@@ -58,10 +58,20 @@ func Example_udp_socket_config_timeout(){
 	}
 }
 
+func Example_quic_socket(){
+	clients :=  socket_manager.Socket_QUIC_Listen("8086", "./src/example/cert.pem", "./src/example/key.pem")
+
+	for {	
+		client := <- clients
+
+		go socket_test_client(client)
+	}
+}
 
 func Example_socket(){
 	go Example_tcp_socket()
 	go Example_udp_socket()
-	Example_udp_socket_config_timeout()
+	go Example_udp_socket_config_timeout()
+	Example_quic_socket()
 }
 

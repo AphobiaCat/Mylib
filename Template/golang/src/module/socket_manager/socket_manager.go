@@ -3,8 +3,12 @@ package socket_manager
 import (
 	"net"
 
+	"crypto/tls"
 	"mylib/src/public"
 	"time"
+	"context"
+	"github.com/quic-go/quic-go"
+	//"github.com/quic-go/quic-go/http3"
 )
 
 type Socket_Client struct {
@@ -219,6 +223,142 @@ func Socket_UDP_Listen(port string, udp_timeout ...int64) chan Socket_Client{
 	ret_chan := make(chan Socket_Client, 10)
 	
 	go udp_listen(port, ret_chan, udp_timeout...)
+
+	return ret_chan
+}
+
+func quic_handle_recv(stream quic.Stream, addr net.Addr, client Socket_Client) {
+	defer stream.Close()
+	
+	public.DBG_LOG("tcp client connected:", addr)
+
+	for{
+
+		if len(client.Err_msg) != 0{
+			public.DBG_ERR("socket client[", addr, "]")
+			return
+		}
+	
+		buffer := make([]byte, 1024)
+		_, err := stream.Read(buffer)
+		if err != nil {
+			public.DBG_ERR("socket client[", addr, "] Error reading:", err)
+			err_msg := "read failed"
+			client.Err_msg <- err_msg
+			return
+		}	
+		client.Recv_msg <- string(buffer)
+
+		client.Last_Op_Time = public.Now_Time_S()
+	}	
+}
+
+func quic_handle_send(stream quic.Stream, addr net.Addr, client Socket_Client) {
+	defer stream.Close()
+	//public.DBG_LOG("Client connected:", conn.RemoteAddr())
+
+	for {
+		select {
+			case err := <- client.Err_msg:
+				public.DBG_ERR("socket client[", addr, "] close")
+				client.Err_msg <- err
+				return 
+		
+			case send_msg := <- client.Send_msg:
+				_, err := stream.Write([]byte(send_msg))
+
+				if err != nil{
+					public.DBG_ERR("socket client[", addr, "] close")
+					err_msg := "send failed"
+					client.Err_msg <- err_msg
+					return 
+				}
+
+				client.Last_Op_Time = public.Now_Time_S()
+		}
+	}
+}
+
+func quic_handle_conn(conn quic.Connection, client_channel chan Socket_Client){
+
+	defer conn.CloseWithError(0, "Closing connection")
+
+	addr := conn.RemoteAddr()
+
+	ctx := context.Background()
+
+	for {
+		stream, err := conn.AcceptStream(ctx)
+		if err != nil {
+			public.DBG_ERR("failed to accept stream: ", err)
+			return
+		}
+
+		tmp_client := Socket_Client{
+			Recv_msg: make(chan string, 10),
+			Send_msg: make(chan string, 10),
+			Err_msg : make(chan string, 2),
+		}
+
+		client_channel <- tmp_client
+
+		
+		
+		go quic_handle_recv(stream, addr, tmp_client)
+		go quic_handle_send(stream, addr, tmp_client)
+	}
+}
+
+func generateTLSConfig(cert_path string, key string) *tls.Config{
+	cert, err := tls.LoadX509KeyPair(cert_path, key)
+	if err != nil {
+		public.DBG_ERR("failed to load certificate: ", err)
+		panic(err)
+	}
+	return &tls.Config{Certificates: []tls.Certificate{cert}}
+
+}
+
+func quic_listen(port string , cert_path string, key string, client_channel chan Socket_Client){
+
+	ln, err := net.ListenPacket("udp", "0.0.0.0:" + port)
+	if err != nil {
+		public.DBG_ERR("failed to listen on UDP port:", port)
+		panic(err)
+	}
+
+	// create quic service config
+	quicConfig := &quic.Config{}
+
+	// listen udp stream and establish quic connect
+	server, err := quic.Listen(ln, generateTLSConfig(cert_path, key), quicConfig)
+	if err != nil {
+		public.DBG_ERR("failed to create QUIC server: ", err)
+		panic(err)
+	}
+
+	public.DBG_LOG("QUIC server is listening on port ", port, "...")
+
+	// recive client stream
+	ctx := context.Background()
+	
+	for {
+		conn, err := server.Accept(ctx)
+
+		if err != nil {
+			public.DBG_ERR("Error accepting connection:", err)
+			continue
+		}
+
+		go quic_handle_conn(conn, client_channel)
+	}
+}
+
+func Socket_QUIC_Listen(port string, cert string, key string)chan Socket_Client{
+
+	ret_chan := make(chan Socket_Client, 10)
+	
+	go quic_listen(port, cert, key, ret_chan)
 
 	return ret_chan
 }
