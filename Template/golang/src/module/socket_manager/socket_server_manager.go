@@ -309,13 +309,13 @@ func quic_handle_conn(conn quic.Connection, client_channel chan Socket_Client){
 	}
 }
 
-func generateTLSConfig(cert_path string, key string) *tls.Config{
-	cert, err := tls.LoadX509KeyPair(cert_path, key)
+func generateTLSConfig(cert_path string, key_path string) (*tls.Config, error){
+	cert, err := tls.LoadX509KeyPair(cert_path, key_path)
 	if err != nil {
 		public.DBG_ERR("failed to load certificate: ", err)
-		panic(err)
+		return nil, err
 	}
-	return &tls.Config{Certificates: []tls.Certificate{cert}}
+	return &tls.Config{Certificates: []tls.Certificate{cert}, NextProtos: []string{"quic-example"}}, err
 
 }
 
@@ -331,7 +331,13 @@ func quic_listen(port string , cert_path string, key string, client_channel chan
 	quicConfig := &quic.Config{}
 
 	// listen udp stream and establish quic connect
-	server, err := quic.Listen(ln, generateTLSConfig(cert_path, key), quicConfig)
+	tls_config, err := generateTLSConfig(cert_path, key)
+	if err != nil{
+		public.DBG_ERR("tls load failed:", err)
+		panic(err)
+	}
+	
+	server, err := quic.Listen(ln, tls_config, quicConfig)
 	if err != nil {
 		public.DBG_ERR("failed to create QUIC server: ", err)
 		panic(err)
