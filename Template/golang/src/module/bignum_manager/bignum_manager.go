@@ -191,8 +191,7 @@ func (mc mid_calc) print(){
 	public.DBG_LOG("calc:", print_str)
 }
 
-
-func process_string_calc(calc_str string)mid_calc{
+func process_string_calc(calc_str string) mid_calc {
 
 	var ret mid_calc
 
@@ -201,27 +200,40 @@ func process_string_calc(calc_str string)mid_calc{
 	for i := 0; i < len_of_calc; i++ {
 		val := calc_str[i]
 
-		if val == '(' || val == ')' || val == '+' || val == '-' || val == '*' || val == '/' || val == '%'{
+		if val == '(' || val == ')' || val == '+' || val == '-' || val == '*' || val == '/' || val == '%' {
 			ret.add_op(val)
 		} else if val == ' ' {
 			continue
-		} else if (val >= '0' && val <= '9'){
+		} else if (val >= '0' && val <= '9') {
 
 			var k int
 			for k = i; k < len_of_calc; k++ {
 				tmp_val := calc_str[k]
-				if (tmp_val >= '0' && tmp_val <= '9') || (tmp_val >= 'a' && tmp_val <= 'f') || (tmp_val >= 'A' && tmp_val <= 'F') || tmp_val == 'x' || tmp_val == '.'{
+				// expense Symbol
+				if (tmp_val >= '0' && tmp_val <= '9') ||
+					(tmp_val >= 'a' && tmp_val <= 'f') ||
+					(tmp_val >= 'A' && tmp_val <= 'F') ||
+					tmp_val == 'x' ||
+					tmp_val == '.' ||
+					tmp_val == 'e' ||  // since calc, even if include by hex
+					tmp_val == 'E' ||  // since calc, even if include by hex
+					tmp_val == '+' ||  // allow index symbol
+					tmp_val == '-' {   // allow index symbol
 					continue
 				} else {
 					break
 				}
 			}
-			
+
 			num_str := calc_str[i:k]
 			i = k - 1
-			
+
 			tmp_big_num := new(big.Float)
-			tmp_big_num.SetString(num_str)
+			_, _, err := tmp_big_num.Parse(num_str, 0)
+			if err != nil {
+				public.DBG_ERR("parse num error:", err)
+				continue
+			}
 
 			ret.add_num(tmp_big_num)
 		}

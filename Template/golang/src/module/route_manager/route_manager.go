@@ -5,6 +5,8 @@ import (
 	"net/http"
 
 	"mylib/src/public"
+
+	cache "mylib/src/module/cachesql_manager"
 )
 
 
@@ -18,6 +20,50 @@ type Route_Manager struct{
 type Route_Post_Process func(string)(interface{}, bool)
 type Route_Get_Process func(map[string]string)(interface{}, bool)
 type Route_Mid_Process func(map[string]string)bool
+
+const stream_restart_count 	int64 = 20
+const stream_restart_time 	int64 = 600
+const stream_restart_time_2	int64 = stream_restart_time * 2
+
+type Stream_Control_Struct struct{
+	Count	int64	`json:"count"`
+}
+
+func stream_control(ip string)bool{
+	public.DBG_LOG("request:", ip)
+
+	redis_restart	:= "lock_restart_" + ip
+	redis_now		:= "lock_now_" + ip
+
+	ret := cache.Get_Cache(redis_restart, func()interface{}{
+		return 1
+	}, stream_restart_time_2, stream_restart_time_2, stream_restart_time)
+
+	if ret == "1"{
+		cache.Set_Cache(redis_restart, 0, stream_restart_time)
+		cache.Set_Cache(redis_now, Stream_Control_Struct{Count: stream_restart_count}, stream_restart_time)
+	}
+
+	ret = cache.Get_Cache(redis_now, func()interface{}{
+		return Stream_Control_Struct{Count: 0}
+	}, stream_restart_time_2, stream_restart_time_2, stream_restart_time)
+
+	var now Stream_Control_Struct
+
+	public.Parser_Json(ret, &now)
+
+
+	public.DBG_LOG("--->:", now)
+	
+	if now.Count > 0 {
+		now.Count -= 1
+		cache.Set_Cache(redis_now, now, stream_restart_time)
+		return true
+	}else{
+		public.DBG_LOG("ip[", ip, "] request to much")
+		return false
+	}
+}
 
 func Process_Route_Middleware_Module(process Route_Mid_Process, need_header []string, err_info string) gin.HandlerFunc{
 	return func(c *gin.Context) {
@@ -88,6 +134,16 @@ func (rm *Route_Manager) Post(api_path string, processer_infos ...interface{}){
 
 	post_route_process := func(context *gin.Context){
 
+		clientIP := context.ClientIP()
+
+		if !stream_control(clientIP){
+			context.JSON(http.StatusOK, gin.H{
+				"code": -429,
+				"error": "too many requests",
+			})
+			return
+		}
+
 		body, err := context.GetRawData()
 
 		if err != nil{
@@ -104,10 +160,8 @@ func (rm *Route_Manager) Post(api_path string, processer_infos ...interface{}){
 		}else{
 			context.JSON(http.StatusOK, gin.H{
 				"code": -1,
-				"error": ret,
+				"error": post_err_msg,
 			})
-			
-			public.DBG_ERR(post_err_msg, " --> ", ret)
 		}
 	}
 
@@ -174,6 +228,16 @@ func (rm *Route_Manager) Get(api_path string, processer_infos ...interface{}){
 
 	get_route_process := func(context *gin.Context){
 
+		clientIP := context.ClientIP()
+
+		if !stream_control(clientIP){
+			context.JSON(http.StatusOK, gin.H{
+				"code": -429,
+				"error": "too many requests",
+			})
+			return
+		}
+
 		params := make(map[string]string)
 
 		for _, key_val := range get_params{
@@ -194,10 +258,8 @@ func (rm *Route_Manager) Get(api_path string, processer_infos ...interface{}){
 		}else{
 			context.JSON(http.StatusOK, gin.H{
 				"code": -1,
-				"error": ret,
+				"error": get_err_msg,
 			})
-
-			public.DBG_ERR(get_err_msg, " --> ", ret)
 		}
 	}
 

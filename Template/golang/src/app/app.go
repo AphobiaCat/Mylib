@@ -1,7 +1,7 @@
 package main
 
 import (
-	//"mylib/src/example"
+	"mylib/src/example"
 	"mylib/src/public"
 	//"mylib/src/module/cachesql_manager"
 	//"mylib/src/module/gorm_manager"
@@ -35,7 +35,7 @@ func APP_Entry() {
 	//example.Example_Webscoketc()
 	//example.Example_Webscokets()
 	//example.Example_file()
-	//example.Example_bitnum()
+	example.Example_bitnum()
 	//example.Example_socket_server()
 	//example.Example_socket_client()
 
