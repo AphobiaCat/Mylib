@@ -60,6 +60,11 @@ func Example_Route(){
 	route_manager.Route_Get("get_test2", 	get_test, []string{"one", "two", "three"}, "get_test2 err", auth_mid, []string{"auth", "auth2"}, "mid auth err")
 	route_manager.Route_Post("post_test3", 	post_test, "post_test err")
 	route_manager.Route_Post("post_test4", 	post_test, "post_test err", auth_mid, []string{"auth", "auth2"}, "mid auth err")
+
+	route_manager.Route_Get("get_test_1s_call", 	get_test, 60, []string{"one", "two", "three"}, "get_test err")
+	route_manager.Route_Get("get_test2_2s_call", 	get_test, 30, []string{"one", "two", "three"}, "get_test2 err", auth_mid, []string{"auth", "auth2"}, "mid auth err")
+	route_manager.Route_Post("post_test3_6s_call", 	post_test, 10, "post_test err")
+	route_manager.Route_Post("post_test4_60s_call", post_test, 1, "post_test err", auth_mid, []string{"auth", "auth2"}, "mid auth err")
 	
 	route_manager.Init_Route("0.0.0.0:7001")
 }

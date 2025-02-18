@@ -41,3 +41,27 @@ func Example_HTTP(){
 
 	
 }
+
+func Example_HTTP2(){
+	default_headers := make(map[string]string)
+
+	default_headers["auth"] = "hello"
+	default_headers["auth2"] = "world"
+
+	hm.Set_Default_Headers(default_headers)
+	hm.Set_Default_Timeout(60)
+
+	tmp_func := func(id string){
+		var ret string
+		for i := 0; ; i++{
+			ret = hm.Post("http://127.0.0.1:7001/post_test4", HTTP_Test_Data{Uid: id, Name:"Dunty", Age:i})
+			public.DBG_LOG(ret)
+		}
+	}
+
+	go tmp_func("1")
+	go tmp_func("2")
+	go tmp_func("3")
+	tmp_func("4")
+}
+

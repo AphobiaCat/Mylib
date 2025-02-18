@@ -21,19 +21,23 @@ type Route_Post_Process func(string)(interface{}, bool)
 type Route_Get_Process func(map[string]string)(interface{}, bool)
 type Route_Mid_Process func(map[string]string)bool
 
-const stream_restart_count 	int64 = 20
-const stream_restart_time 	int64 = 600
+const stream_restart_time 	int64 = 60
 const stream_restart_time_2	int64 = stream_restart_time * 2
 
 type Stream_Control_Struct struct{
-	Count	int64	`json:"count"`
+	C	int	`json:"c"`
 }
 
-func stream_control(ip string)bool{
-	public.DBG_LOG("request:", ip)
+func stream_control(api string, ip string, call_per_minute_rate int)bool{
 
-	redis_restart	:= "lock_restart_" + ip
-	redis_now		:= "lock_now_" + ip
+	if call_per_minute_rate == 0{
+		return true
+	}
+	
+	public.DBG_LOG(api, " request:", ip)
+
+	redis_restart	:= "lock_restart_" + api + "_" + ip
+	redis_now		:= "lock_now_" + api + "_" + ip
 
 	ret := cache.Get_Cache(redis_restart, func()interface{}{
 		return 1
@@ -41,26 +45,25 @@ func stream_control(ip string)bool{
 
 	if ret == "1"{
 		cache.Set_Cache(redis_restart, 0, stream_restart_time)
-		cache.Set_Cache(redis_now, Stream_Control_Struct{Count: stream_restart_count}, stream_restart_time)
+		cache.Set_Cache(redis_now, Stream_Control_Struct{C: call_per_minute_rate}, stream_restart_time)
 	}
 
 	ret = cache.Get_Cache(redis_now, func()interface{}{
-		return Stream_Control_Struct{Count: 0}
+		return Stream_Control_Struct{C: 0}
 	}, stream_restart_time_2, stream_restart_time_2, stream_restart_time)
 
 	var now Stream_Control_Struct
 
 	public.Parser_Json(ret, &now)
 
-
 	public.DBG_LOG("--->:", now)
 	
-	if now.Count > 0 {
-		now.Count -= 1
+	if now.C > 0 {
+		now.C -= 1
 		cache.Set_Cache(redis_now, now, stream_restart_time)
 		return true
 	}else{
-		public.DBG_LOG("ip[", ip, "] request to much")
+		public.DBG_ERR("ip[", ip, "] request to much")
 		return false
 	}
 }
@@ -92,6 +95,7 @@ func (rm *Route_Manager) Post(api_path string, processer_infos ...interface{}){
 
 	var post_process	Route_Post_Process
 	var post_err_msg	string
+	var post_count_per_min	int
 		
 	var mid_process		Route_Mid_Process
 	var mid_headers		[]string
@@ -123,6 +127,12 @@ func (rm *Route_Manager) Post(api_path string, processer_infos ...interface{}){
 				}else if who_params == "mid"{
 					mid_err_msg = val.(string)
 				}
+
+			case int:
+				post_count_per_min = val.(int)
+
+			default:
+				public.DBG_ERR("err info:", val)
 		}
 
 	}
@@ -134,9 +144,15 @@ func (rm *Route_Manager) Post(api_path string, processer_infos ...interface{}){
 
 	post_route_process := func(context *gin.Context){
 
+		defer func(){
+			if err := recover(); err != nil{
+				public.DBG_ERR("err:", err)
+			}
+		}()
+
 		clientIP := context.ClientIP()
 
-		if !stream_control(clientIP){
+		if !stream_control(api_path, clientIP, post_count_per_min){
 			context.JSON(http.StatusOK, gin.H{
 				"code": -429,
 				"error": "too many requests",
@@ -179,13 +195,14 @@ func (rm *Route_Manager) Get(api_path string, processer_infos ...interface{}){
 
 	rm.Init_Gin()
 
-	var get_process Route_Get_Process
-	var get_params	[]string
-	var get_err_msg string
+	var get_process 	Route_Get_Process
+	var get_params		[]string
+	var get_err_msg 	string
+	var get_count_per_min	int
 		
-	var mid_process Route_Mid_Process
-	var mid_headers	[]string
-	var mid_err_msg string
+	var mid_process 	Route_Mid_Process
+	var mid_headers		[]string
+	var mid_err_msg 	string
 	
 	
 	who_params := ""
@@ -215,6 +232,9 @@ func (rm *Route_Manager) Get(api_path string, processer_infos ...interface{}){
 					mid_err_msg = val.(string)
 				}
 
+			case int:
+				get_count_per_min	= val.(int)
+
 			default:
 				public.DBG_ERR("err info:", val)
 		}
@@ -228,9 +248,15 @@ func (rm *Route_Manager) Get(api_path string, processer_infos ...interface{}){
 
 	get_route_process := func(context *gin.Context){
 
+		defer func(){
+			if err := recover(); err != nil{
+				public.DBG_ERR("err:", err)
+			}
+		}()
+
 		clientIP := context.ClientIP()
 
-		if !stream_control(clientIP){
+		if !stream_control(api_path, clientIP, get_count_per_min){
 			context.JSON(http.StatusOK, gin.H{
 				"code": -429,
 				"error": "too many requests",
