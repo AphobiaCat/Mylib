@@ -1,7 +1,7 @@
 package main
 
 import (
-	//"mylib/src/example"
+	"mylib/src/example"
 	"mylib/src/public"
 	//"mylib/src/module/cachesql_manager"
 	//"mylib/src/module/gorm_manager"
@@ -29,7 +29,7 @@ func APP_Entry() {
 	//example.Example_Json_Op()
 	//example.Example_Timer_Manager()
 	//example.Example_2_Gorm()
-	//example.Example_Route()
+	example.Example_Route()
 	//example.Example_Cachesql()
 	//example.Example_HTTP()
 	//example.Example_HTTP2()

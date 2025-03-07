@@ -2,6 +2,8 @@ package route_manager
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/gin-contrib/cors"
+	
 	"net/http"
 
 	"mylib/src/public"
@@ -20,6 +22,10 @@ type Route_Manager struct{
 type Route_Post_Process func(string)(interface{}, bool)
 type Route_Get_Process func(map[string]string)(interface{}, bool)
 type Route_Mid_Process func(map[string]string)bool
+
+var allow_origins = []string{"*"}
+var allow_methods = []string{"*"} //[]string{"GET", "POST", "PUT", "DELETE"} 
+var allow_headers = []string{"*"}
 
 const stream_restart_time 	int64 = 60
 const stream_restart_time_2	int64 = stream_restart_time * 2
@@ -304,6 +310,14 @@ func (rm *Route_Manager) Init_Gin(){
 	if !rm.have_init{
 		gin.SetMode(gin.ReleaseMode)
 		rm.http_service	= gin.New()
+		
+		corsConfig := cors.DefaultConfig()
+		corsConfig.AllowOrigins = allow_origins  
+		corsConfig.AllowMethods = allow_methods
+		corsConfig.AllowHeaders = allow_headers 
+
+		rm.http_service.Use(cors.New(corsConfig))
+		
 		rm.have_init	= true
 	}
 }
