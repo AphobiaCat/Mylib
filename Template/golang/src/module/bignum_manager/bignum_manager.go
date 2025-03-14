@@ -153,17 +153,13 @@ func (mc mid_calc) calc() string{
 				dividend	:= nums_array[array_index]
 				divisor		:= nums_array[array_index - 1]
 
-				quotient := new(big.Float).Quo(dividend, divisor)
+				dividendInt, _ := dividend.Int(nil)
+				divisorInt, _ := divisor.Int(nil)
 
-				intPart := new(big.Int)
-				quotient.Int(intPart)
+				remainder := new(big.Int).Mod(dividendInt, divisorInt)
+				remainderFloat := new(big.Float).SetInt(remainder)
 
-				intPartFloat := new(big.Float).SetInt(intPart)
-
-				product := new(big.Float).Mul(intPartFloat, divisor)
-				remainder := new(big.Float).Sub(dividend, product)
-
-				nums_array[array_index - 1] = remainder
+				nums_array[array_index - 1] = remainderFloat
 				nums_array = nums_array[:array_index]
 				array_index -= 1
 			}
@@ -283,6 +279,11 @@ func make_calc_mid(calc_item ...interface{}) mid_calc {
 	}
 
 	return ret
+}
+
+func Byte_2_Num_Str(byte_array [32]byte)string{
+	hashInt := new(big.Int).SetBytes(byte_array[:])
+	return hashInt.String()	
 }
 
 func Calc(calc_item ...interface{}) string{
