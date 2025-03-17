@@ -126,6 +126,45 @@ func (rm *Redis_Manager) Borrow_Value(value_key string) interface{}{
 }
 
 
+func (rm *Redis_Manager) Queue_Set(redis_key string, data interface{}){
+	err := rm.rdb.LPush(rm.ctx, redis_key, public.Build_Json(data)).Err()
+
+	if err != nil{
+		public.DBG_ERR("queue set value failed", err)
+	}
+}
+
+func (rm *Redis_Manager) Queue_Get(redis_key string)(string, bool){
+	task, err := rm.rdb.RPop(rm.ctx, redis_key).Result()
+	 
+	if err != nil {
+		if err != redis.Nil {
+			public.DBG_ERR("queue get value failed", err)
+		}
+		return "", false
+	}
+	return task, true
+}
+
+func (rm *Redis_Manager) Stack_Set(redis_key string, data interface{}){
+	err := rm.rdb.LPush(rm.ctx, redis_key, public.Build_Json(data)).Err()
+
+	if err != nil{
+		public.DBG_ERR("stack set value failed", err)
+	}
+}
+
+func (rm *Redis_Manager) Stack_Get(redis_key string)(string, bool){
+	task, err := rm.rdb.LPop(rm.ctx, redis_key).Result()
+
+	if err != nil {
+		if err != redis.Nil {
+			public.DBG_ERR("stack get value failed", err)
+		}
+		return "", false
+	}
+	return task, true
+}
 
 
 
@@ -144,6 +183,24 @@ func Get_Value(value_key string) interface{}{
 func Borrow_Value(value_key string) interface{}{
 	return redis_manager.Borrow_Value(value_key)
 }
+
+func Queue_Set(redis_key string, data interface{}){
+	redis_manager.Queue_Set(redis_key, data)
+}
+
+func Queue_Get(redis_key string)(string, bool){
+	return redis_manager.Queue_Get(redis_key)
+}
+
+func Stack_Set(redis_key string, data interface{}){
+	redis_manager.Stack_Set(redis_key, data)
+}
+
+func Stack_Get(redis_key string)(string, bool){
+	return redis_manager.Stack_Get(redis_key)
+}
+
+
 
 func init(){
 

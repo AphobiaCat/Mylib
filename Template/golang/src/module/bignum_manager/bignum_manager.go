@@ -265,6 +265,10 @@ func make_calc_mid(calc_item ...interface{}) mid_calc {
 				tmp_num := float64(val.(uint))		
 				ret.add_num(big.NewFloat(tmp_num))
 
+			case uint32:
+				tmp_num := float64(val.(uint32))		
+				ret.add_num(big.NewFloat(tmp_num))
+
 			case int64:
 				tmp_num := float64(val.(int64))		
 				ret.add_num(big.NewFloat(tmp_num))
