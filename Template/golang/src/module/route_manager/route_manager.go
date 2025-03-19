@@ -318,7 +318,7 @@ func (rm *Route_Manager) Init_Gin(){
 
 		rm.http_service.Use(cors.New(corsConfig))
 
-		rm.SetTrustedProxies([]string{"127.0.0.1", "192.168.1.1"})	//only trust local proxy
+		rm.http_service.SetTrustedProxies([]string{"127.0.0.1", "192.168.1.1"})	//only trust local proxy
 		
 		rm.have_init	= true
 	}
