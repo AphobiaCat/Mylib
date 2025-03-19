@@ -5,12 +5,18 @@ import(
 	"mylib/src/public"
 )
 
-func auth_mid(headers map[string]string)bool{
+func auth_mid(headers map[string]string)(map[string]string, bool){
+	
 	if headers["auth"] == "hello" && headers["auth2"] == "world"{
-		return true
+		ret := make(map[string]string)
+
+		ret["auth"] = "hello_finish"
+		ret["auth2"] = "world_finish"
+		
+		return ret, true
 	}
 
-	return false
+	return map[string]string{}, false
 }
 
 func get_test(params map[string]string)(interface{}, bool){
@@ -36,6 +42,16 @@ func get_test(params map[string]string)(interface{}, bool){
 	}
 }
 
+func get_test_recv_mid(params map[string]string, mid ...map[string]string)(interface{}, bool){
+
+	if len(mid) != 0{
+		ret := mid[0]["auth"] + mid[0]["auth2"]
+		return ret, true
+	}
+	return "null", false
+}
+
+
 type Login_Data struct {
 	Uid			string	`json:"uid"`
 	Name		string	`json:"name"`
@@ -53,13 +69,26 @@ func post_test(body_json string)(interface{}, bool){
 	return login_data, true
 }
 
+func post_test_recv_mid(body_json string, mid ...map[string]string)(interface{}, bool){
+
+	if len(mid) != 0{
+		ret := mid[0]["auth"] + mid[0]["auth2"]
+		return ret, true
+	}
+	return "null", false
+}
+
+
 
 func Example_Route(){
 
 	route_manager.Route_Get("get_test", 	get_test, []string{"one", "two", "three"}, "get_test err")
 	route_manager.Route_Get("get_test2", 	get_test, []string{"one", "two", "three"}, "get_test2 err", auth_mid, []string{"auth", "auth2"}, "mid auth err")
-	route_manager.Route_Post("post_test3", 	post_test, "post_test err")
-	route_manager.Route_Post("post_test4", 	post_test, "post_test err", auth_mid, []string{"auth", "auth2"}, "mid auth err")
+	route_manager.Route_Get("get_test3",	get_test_recv_mid, []string{"one", "two", "three"}, "get_test2 err", auth_mid, []string{"auth", "auth2"}, "mid auth err")
+
+	route_manager.Route_Post("post_test1", 	post_test, "post_test err")
+	route_manager.Route_Post("post_test2", 	post_test, "post_test err", auth_mid, []string{"auth", "auth2"}, "mid auth err")	
+	route_manager.Route_Post("post_test3",	post_test_recv_mid, "post_test err", auth_mid, []string{"auth", "auth2"}, "mid auth err")
 
 	route_manager.Route_Get("get_test_1s_call", 	get_test, 60, []string{"one", "two", "three"}, "get_test err")
 	route_manager.Route_Get("get_test2_2s_call", 	get_test, 30, []string{"one", "two", "three"}, "get_test2 err", auth_mid, []string{"auth", "auth2"}, "mid auth err")

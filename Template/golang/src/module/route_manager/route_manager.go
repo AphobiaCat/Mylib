@@ -21,7 +21,9 @@ type Route_Manager struct{
 
 type Route_Post_Process func(string)(interface{}, bool)
 type Route_Get_Process func(map[string]string)(interface{}, bool)
-type Route_Mid_Process func(map[string]string)bool
+type Route_Post_Recv_Mid_Process func(string, ...map[string]string)(interface{}, bool)
+type Route_Get_Recv_Mid_Process func(map[string]string, ...map[string]string)(interface{}, bool)
+type Route_Mid_Process func(map[string]string)(map[string]string, bool)
 
 var allow_origins = []string{"*"}
 var allow_methods = []string{"*"} //[]string{"GET", "POST", "PUT", "DELETE"} 
@@ -29,6 +31,8 @@ var allow_headers = []string{"*"}
 
 const stream_restart_time 	int64 = 60
 const stream_restart_time_2	int64 = stream_restart_time * 2
+
+const mid_data_key = "MidData"
 
 type Stream_Control_Struct struct{
 	C	int	`json:"c"`
@@ -83,7 +87,25 @@ func Process_Route_Middleware_Module(process Route_Mid_Process, need_header []st
 			use_header_array[val] = c.GetHeader(val)
 		}
 
-		ret := process(use_header_array)
+		user_data, ret := process(use_header_array)
+
+		if len(user_data) != 0{
+			user_info_interface, exist := c.Get(mid_data_key)
+
+			var new_user_info map[string]string
+
+			if exist{
+				new_user_info = user_info_interface.(map[string]string)				
+			}else{
+				new_user_info = make(map[string]string)
+			}
+
+			for key, val := range user_data{
+				new_user_info[key] = val
+			}
+
+			c.Set(mid_data_key, new_user_info)
+		}
 
 		if ret{
 			c.Next()
@@ -99,13 +121,15 @@ func (rm *Route_Manager) Post(api_path string, processer_infos ...interface{}){
 
 	rm.Init_Gin()
 
-	var post_process	Route_Post_Process
-	var post_err_msg	string
-	var post_count_per_min	int
+	var post_process			Route_Post_Process
+	var post_process_recv_mid	Route_Post_Recv_Mid_Process
+	
+	var post_err_msg			string
+	var post_count_per_min		int
 		
-	var mid_process		Route_Mid_Process
-	var mid_headers		[]string
-	var mid_err_msg		string
+	var mid_process				Route_Mid_Process
+	var mid_headers				[]string
+	var mid_err_msg				string
 	
 	who_params := ""
 
@@ -116,8 +140,12 @@ func (rm *Route_Manager) Post(api_path string, processer_infos ...interface{}){
 				post_process = val.(func(string)(interface{}, bool))
 				who_params = "post"
 
-			case func(map[string]string)bool:
-				mid_process = val.(func(map[string]string)bool)		
+			case func(string, ...map[string]string)(interface{}, bool):
+				post_process_recv_mid = val.(func(string, ...map[string]string)(interface{}, bool))
+				who_params = "post"
+
+			case func(map[string]string)(map[string]string, bool):
+				mid_process = val.(func(map[string]string)(map[string]string, bool))		
 				who_params = "mid"
 
 			case []string:
@@ -143,7 +171,7 @@ func (rm *Route_Manager) Post(api_path string, processer_infos ...interface{}){
 
 	}
 
-	if post_process == nil{
+	if post_process == nil && post_process_recv_mid == nil{
 		public.DBG_ERR("post process no exist")
 		return 
 	}
@@ -172,7 +200,21 @@ func (rm *Route_Manager) Post(api_path string, processer_infos ...interface{}){
 			public.DBG_ERR("input data no exist:", body)
 		}
 
-		ret, succ := post_process(string(body))
+		var ret interface{}
+		var succ bool
+
+		if post_process != nil{
+			ret, succ = post_process(string(body))
+		}else{
+			mid_params, exist := context.Get(mid_data_key)
+
+			if exist{
+				ret, succ = post_process_recv_mid(string(body), mid_params.(map[string]string))
+			}else{
+				ret, succ = post_process_recv_mid(string(body))
+			}
+		}
+			
 
 		if succ{
 			context.JSON(http.StatusOK, gin.H{
@@ -182,8 +224,10 @@ func (rm *Route_Manager) Post(api_path string, processer_infos ...interface{}){
 		}else{
 			context.JSON(http.StatusOK, gin.H{
 				"code": -1,
-				"error": post_err_msg,
+				"error": ret,
 			})
+
+			public.DBG_ERR(post_err_msg)
 		}
 	}
 
@@ -201,14 +245,15 @@ func (rm *Route_Manager) Get(api_path string, processer_infos ...interface{}){
 
 	rm.Init_Gin()
 
-	var get_process 	Route_Get_Process
-	var get_params		[]string
-	var get_err_msg 	string
-	var get_count_per_min	int
+	var get_process 			Route_Get_Process
+	var get_process_recv_mid	Route_Get_Recv_Mid_Process
+	var get_params				[]string
+	var get_err_msg 			string
+	var get_count_per_min		int
 		
-	var mid_process 	Route_Mid_Process
-	var mid_headers		[]string
-	var mid_err_msg 	string
+	var mid_process 			Route_Mid_Process
+	var mid_headers				[]string
+	var mid_err_msg 			string
 	
 	
 	who_params := ""
@@ -220,8 +265,12 @@ func (rm *Route_Manager) Get(api_path string, processer_infos ...interface{}){
 				get_process = val.(func(map[string]string)(interface{}, bool))
 				who_params = "get"
 
-			case func(map[string]string)bool:
-				mid_process = val.(func(map[string]string)bool)	
+			case func(map[string]string, ...map[string]string)(interface{}, bool):
+				get_process_recv_mid = val.(func(map[string]string, ...map[string]string)(interface{}, bool))
+				who_params = "get"
+
+			case func(map[string]string)(map[string]string, bool):
+				mid_process = val.(func(map[string]string)(map[string]string, bool))	
 				who_params = "mid"
 
 			case []string:
@@ -247,7 +296,7 @@ func (rm *Route_Manager) Get(api_path string, processer_infos ...interface{}){
 
 	}
 
-	if get_process == nil{
+	if get_process == nil && get_process_recv_mid == nil{
 		public.DBG_ERR("get process no exist")
 		return 
 	}
@@ -280,7 +329,20 @@ func (rm *Route_Manager) Get(api_path string, processer_infos ...interface{}){
 			}
 		}
 
-		ret, succ := get_process(params)
+		var ret interface{}
+		var succ bool
+
+		if get_process != nil{
+			ret, succ = get_process(params)
+		}else{
+			mid_params, exist := context.Get(mid_data_key)
+
+			if exist{
+				ret, succ = get_process_recv_mid(params, mid_params.(map[string]string))
+			}else{
+				ret, succ = get_process_recv_mid(params)
+			}
+		}
 
 		if succ{
 			context.JSON(http.StatusOK, gin.H{
@@ -290,8 +352,10 @@ func (rm *Route_Manager) Get(api_path string, processer_infos ...interface{}){
 		}else{
 			context.JSON(http.StatusOK, gin.H{
 				"code": -1,
-				"error": get_err_msg,
+				"error": ret,
 			})
+
+			public.DBG_ERR(get_err_msg)
 		}
 	}
 
