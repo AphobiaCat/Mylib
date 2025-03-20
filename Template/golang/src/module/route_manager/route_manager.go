@@ -19,6 +19,13 @@ type Route_Manager struct{
 	have_init		bool
 }
 
+type mid_array struct{
+	mid_process 	Route_Mid_Process
+	mid_headers		[]string
+	mid_err_msg 	string
+}
+	
+
 type Route_Post_Process func(string)(interface{}, bool)
 type Route_Get_Process func(map[string]string)(interface{}, bool)
 type Route_Post_Recv_Mid_Process func(string, ...map[string]string)(interface{}, bool)
@@ -126,11 +133,11 @@ func (rm *Route_Manager) Post(api_path string, processer_infos ...interface{}){
 	
 	var post_err_msg			string
 	var post_count_per_min		int
-		
-	var mid_process				Route_Mid_Process
-	var mid_headers				[]string
-	var mid_err_msg				string
-	
+
+
+	mids_index := -1
+	mids := []mid_array{}
+
 	who_params := ""
 
 	for _, val := range processer_infos{
@@ -145,21 +152,24 @@ func (rm *Route_Manager) Post(api_path string, processer_infos ...interface{}){
 				who_params = "post"
 
 			case func(map[string]string)(map[string]string, bool):
-				mid_process = val.(func(map[string]string)(map[string]string, bool))		
+				mids_index += 1
+
+				mids = append(mids, mid_array{mid_process: val.(func(map[string]string)(map[string]string, bool))})
+
 				who_params = "mid"
 
 			case []string:
 				if who_params == "post"{
 					
 				}else if who_params == "mid"{
-					mid_headers = val.([]string)
+					mids[mids_index].mid_headers = val.([]string)
 				}
 
 			case string:
 				if who_params == "post"{
 					post_err_msg = val.(string)
 				}else if who_params == "mid"{
-					mid_err_msg = val.(string)
+					mids[mids_index].mid_err_msg = val.(string)
 				}
 
 			case int:
@@ -232,8 +242,15 @@ func (rm *Route_Manager) Post(api_path string, processer_infos ...interface{}){
 	}
 
 
-	if mid_process != nil{
-		rm.http_service.POST(api_path, Process_Route_Middleware_Module(mid_process, mid_headers, mid_err_msg), post_route_process)	
+	if mids_index != -1{
+		mids_func := []gin.HandlerFunc{}
+		
+		for _, val := range mids{
+			mids_func = append(mids_func, Process_Route_Middleware_Module(val.mid_process, val.mid_headers, val.mid_err_msg))
+		}
+		mids_func = append(mids_func, post_route_process)
+
+		rm.http_service.POST(api_path, mids_func...)	
 	}else{
 		rm.http_service.POST(api_path, post_route_process)
 	}
@@ -250,11 +267,9 @@ func (rm *Route_Manager) Get(api_path string, processer_infos ...interface{}){
 	var get_params				[]string
 	var get_err_msg 			string
 	var get_count_per_min		int
-		
-	var mid_process 			Route_Mid_Process
-	var mid_headers				[]string
-	var mid_err_msg 			string
-	
+
+	mids_index := -1
+	mids := []mid_array{}
 	
 	who_params := ""
 
@@ -270,21 +285,24 @@ func (rm *Route_Manager) Get(api_path string, processer_infos ...interface{}){
 				who_params = "get"
 
 			case func(map[string]string)(map[string]string, bool):
-				mid_process = val.(func(map[string]string)(map[string]string, bool))	
+				mids_index += 1
+				
+				mids = append(mids, mid_array{mid_process: val.(func(map[string]string)(map[string]string, bool))})
+				
 				who_params = "mid"
 
 			case []string:
 				if who_params == "get"{
 					get_params = val.([]string)
 				}else if who_params == "mid"{
-					mid_headers = val.([]string)
+					mids[mids_index].mid_headers = val.([]string)
 				}
 
 			case string:
 				if who_params == "get"{
 					get_err_msg = val.(string)
 				}else if who_params == "mid"{
-					mid_err_msg = val.(string)
+					mids[mids_index].mid_err_msg = val.(string)
 				}
 
 			case int:
@@ -360,8 +378,15 @@ func (rm *Route_Manager) Get(api_path string, processer_infos ...interface{}){
 	}
 
 
-	if mid_process != nil{
-		rm.http_service.GET(api_path, Process_Route_Middleware_Module(mid_process, mid_headers, mid_err_msg), get_route_process)	
+	if mids_index != -1{
+		mids_func := []gin.HandlerFunc{}
+		
+		for _, val := range mids{
+			mids_func = append(mids_func, Process_Route_Middleware_Module(val.mid_process, val.mid_headers, val.mid_err_msg))
+		}
+		mids_func = append(mids_func, get_route_process)
+
+		rm.http_service.GET(api_path, mids_func...)	
 	}else{
 		rm.http_service.GET(api_path, get_route_process)	
 	}
