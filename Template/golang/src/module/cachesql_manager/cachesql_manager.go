@@ -45,7 +45,7 @@ func (csm *Cache_Sql_Manager) Init(server_ip string, password string, DB int) {
 }
 
 func (csm *Cache_Sql_Manager) Set_Cache(key string, value interface{}, config_time ...int64) {
-	max_alive_time 		:= int64(1000 * 1000 * 1000 * 60 * 10)
+	max_alive_time 		:= int64(1000 * 1000 * 1000 * 60 * 2)
 
 	if len(config_time) == 1{
 		max_alive_time	= config_time[0] * 1000 * 1000 * 1000
@@ -56,7 +56,7 @@ func (csm *Cache_Sql_Manager) Set_Cache(key string, value interface{}, config_ti
 	var new_cache_data Standard_CSM_Cache
 	
 	new_cache_data.D	= public.Build_Json(value)
-	new_cache_data.L	= now_time
+	new_cache_data.L	= now_time + max_alive_time	//keep no update by get cache default force update time
 	new_cache_data.LW	= 0
 	new_cache_data.W	= false
 	new_cache_data.Wait	= false
