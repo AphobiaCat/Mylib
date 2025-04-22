@@ -1,0 +1,17 @@
+[package]
+name = "wasm_websocket_client"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+js-sys = "0.3.77"
+wasm-bindgen = "0.2.100"
+web-sys = { version = "0.3.77", features = [
+  "WebSocket",
+  "MessageEvent",
+  "ErrorEvent",
+  "CloseEvent",
+  "BinaryType",
+  "Window",
+  "console"
+] }

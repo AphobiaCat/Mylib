@@ -1,0 +1,10 @@
+[package]
+name = "exsamples"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+
+public = { path = "../public" }
+dynamic_code = { path = "../dynamic_code"}
+thread_manager = { path = "../thread_manager"}
