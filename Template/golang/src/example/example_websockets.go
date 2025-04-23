@@ -5,43 +5,26 @@ import(
 	ws_m "mylib/src/module/websockets_manager"
 )
 
-func test(client *ws_m.Ws_Client){
+func test_ws_client(recv_msg_chan chan string, send_msg_chan chan string, close_client chan bool){
 
-	public.DBG_LOG("client:", client)
+	public.DBG_LOG("client")
 
-	ready_return := false
-
-	for {
-		msgs, ret := client.Recv_Msg()
-
-		public.DBG_LOG(ret)
-
-		if ret{
-			ready_return = true
-			for _, val := range msgs{
-				public.DBG_LOG("recv msg :", val)
-				client.Send_Msg(val)
-			}
-		}else if ready_return{
-			client.Close()
-			return 
+	for{
+		select{
+			case msg:= <- recv_msg_chan:
+				public.DBG_LOG("recv:", msg)
+				send_msg_chan <- msg
+	
+			case <- close_client:
+				public.DBG_LOG("client close")
+				return
 		}
-
-		if !client.IsAlive(){
-			return 
-		}
-		
-		public.Sleep(1000)
 	}
+
+	close_client <- true
 }
 
 func Example_Webscokets(){
-	ws_chan := ws_m.Init_Websocket_Server("0.0.0.0:1234")
-
-	for{
-		client := <- ws_chan
-
-		go test(client)
-	}
+	ws_m.Init_Websocket_Server("0.0.0.0:1234", test_ws_client)
 }
 
