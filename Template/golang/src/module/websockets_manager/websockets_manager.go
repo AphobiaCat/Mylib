@@ -74,14 +74,15 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
         log.Println(err)
         return
     }
-    defer conn.Close()
-
+    
 	ws_client := Ws_Client{
 		conn	: conn,
 		alive	: true,
 		have_msg: false,
 		msg		: make(chan string, 10),
 	}
+	
+	defer ws_client.Close()
 
     ws_chan <- &ws_client
 
@@ -91,7 +92,6 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
         if err != nil {
             public.DBG_ERR(err)
 
-            ws_client.alive		= false
             ws_client.have_msg	= false
             
             return
