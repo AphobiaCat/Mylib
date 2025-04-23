@@ -19,6 +19,22 @@ macro_rules! DBG_LOG {
 }
 
 #[macro_export]
+macro_rules! DBG_ERR {
+    ($($arg:expr),*) => {
+        {
+            let file = std::file!();
+            let line = std::line!();
+
+            let args = vec![$(format!("{:?}", $arg)),*];
+
+            let args_str = args.join("");
+
+            println!("\x1b[31m{:<20}|{:^5}| logs: {}\x1b[0m", file, line, args_str);
+        }
+    };
+}
+
+#[macro_export]
 macro_rules! define_global {
     ($name:ident, $ty:ty, $expr:expr) => {
         static $name: once_cell::sync::Lazy<std::sync::Mutex<$ty>> = once_cell::sync::Lazy::new(|| std::sync::Mutex::new($expr));
