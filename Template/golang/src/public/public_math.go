@@ -5,14 +5,15 @@ import (
 	"github.com/mr-tron/base58"
 	"math/rand"
 	"time"
+	"unsafe"
 )
 
 func Rand(max_num int)int{
 	return rand.Intn(max_num)
 }
 
-func Rand_U64(max_num u64)uint64{
-	return rand.Uint64(max_num)
+func Rand_U64(max_num uint64)uint64{
+	return rand.Uint64()
 }
 
 
