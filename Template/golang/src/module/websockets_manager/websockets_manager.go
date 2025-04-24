@@ -35,6 +35,11 @@ func ws_handler(w http.ResponseWriter, r *http.Request) {
 	close_client	:= make(chan bool, 2)
 
     defer conn.Close()
+    defer func() {
+		if r := recover(); r != nil {
+			public.DBG_ERR("Recovered error:", r)
+		}
+	}()
 
 	go func() {
         for {
@@ -65,7 +70,7 @@ func ws_handler(w http.ResponseWriter, r *http.Request) {
 			}
         }
     }()
-    
+
 	global_ws_client_process(recv_msg_chan, send_msg_chan, close_client)
 }
 

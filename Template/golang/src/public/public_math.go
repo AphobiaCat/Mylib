@@ -4,11 +4,17 @@ import (
 	"crypto/sha256"
 	"github.com/mr-tron/base58"
 	"math/rand"
+	"time"
 )
 
 func Rand(max_num int)int{
 	return rand.Intn(max_num)
 }
+
+func Rand_U64(max_num u64)uint64{
+	return rand.Uint64(max_num)
+}
+
 
 func Sha256(encode_str string)[32]byte{
 
@@ -126,4 +132,33 @@ func QuickSortStruct[T quick_sort_type](sort_array []T) []T {
 	return ret
 }
 
+func Encode(origin interface{}, encode_key uint64) string {
+	str := Build_Json(origin)
+
+	fake := (*[]uint8)(unsafe.Pointer(&str))
+
+	encode_key_array := (*[8]uint8)(unsafe.Pointer(&encode_key))
+
+	for index, val := range *fake {
+		(*fake)[index] = val ^ (*encode_key_array)[index % 8]
+	}
+	return str
+}
+
+func Decode(origin_msg string, decode_key uint64) string {
+
+	fake := (*[]uint8)(unsafe.Pointer(&origin_msg))
+
+	decode_key_array := (*[8]uint8)(unsafe.Pointer(&decode_key))
+
+	for index, val := range *fake {
+		(*fake)[index] = val ^ (*decode_key_array)[index % 8]
+	}
+	return origin_msg
+}
+
+
+func init(){
+	rand.Seed(time.Now().UnixNano())
+}
 
