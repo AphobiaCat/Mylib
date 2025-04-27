@@ -133,31 +133,26 @@ func QuickSortStruct[T quick_sort_type](sort_array []T) []T {
 	return ret
 }
 
-func Encode(origin interface{}, encode_key uint64) string {
-	str := Build_Json(origin)
-
-	fake := (*[]uint8)(unsafe.Pointer(&str))
+func Encode(origin interface{}, encode_key uint64) []uint8 {
+	jsonBytes := []uint8(Build_Json(origin))
 
 	encode_key_array := (*[8]uint8)(unsafe.Pointer(&encode_key))
 
-	for index, val := range *fake {
-		(*fake)[index] = val ^ (*encode_key_array)[index % 8]
+	for i := range jsonBytes {
+		jsonBytes[i] ^= encode_key_array[i%8]
 	}
-	return str
+	return jsonBytes
 }
 
-func Decode(origin_msg string, decode_key uint64) string {
-
-	fake := (*[]uint8)(unsafe.Pointer(&origin_msg))
-
+func Decode(encoded []uint8, decode_key uint64) string {
 	decode_key_array := (*[8]uint8)(unsafe.Pointer(&decode_key))
 
-	for index, val := range *fake {
-		(*fake)[index] = val ^ (*decode_key_array)[index % 8]
+	decoded := make([]uint8, len(encoded))
+	for i, b := range encoded {
+		decoded[i] = b ^ decode_key_array[i%8]
 	}
-	return origin_msg
+	return string(decoded)
 }
-
 
 func init(){
 	rand.Seed(time.Now().UnixNano())
