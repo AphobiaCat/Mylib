@@ -142,6 +142,24 @@ func (this *Thread_Map[Key, Val]) New_Or_Update(new_key Key, new_val Val)bool{
 	return this.New(new_key, new_val)
 }
 
+func (this *Thread_Map[Key, Val]) Delete(delete_key Key)bool{
+	this.map_lock.Lock()	
+	map_index, exist := this.Map[delete_key]
+	if exist{
+		delete(this.Map, delete_key)
+		this.map_lock.Unlock()
+		this.val_lock[map_index].Lock()
+		this.total_lock.Lock()
+		this.Exist[map_index] = false
+		this.total_lock.Unlock()
+		this.val_lock[map_index].Unlock()
+
+		return true
+	}
+	this.map_lock.Unlock()
+	return false
+}
+
 func (this *Thread_Map[Key, Val]) Get_Val(key Key)(Val, bool){
 	this.map_lock.Lock()
 	map_index, exist := this.Map[key]
@@ -200,7 +218,7 @@ func (this *Thread_Map[Key, Val]) Return_Val(key Key, val Val)bool{
 }
 
 
-func (this *Thread_Map[Key, Val]) Delete(){
+func (this *Thread_Map[Key, Val]) Delete_Map(){
 	this.Is_Delete = true
 }
 

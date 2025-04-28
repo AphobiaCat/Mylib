@@ -14,6 +14,18 @@ func test_thread_map2(tmp *thread_map.Thread_Map[string, uint32]){
 	}else{
 		public.DBG_ERR("tmp val no exist")
 	}
+
+	tmp.Delete("Dunty")
+
+	ret, exist = tmp.Get_Val("Dunty")
+
+	if exist{
+		public.DBG_ERR("tmp val still exist", ret)
+	}else{
+		public.DBG_LOG("tmp val no exist")
+	}
+
+	tmp.Delete_Map()
 }
 
 func Example_thread_map(){
