@@ -34,17 +34,18 @@ func APP_Entry() {
 	//example.Example_HTTP()
 	//example.Example_HTTP2()
 	//example.Example_Webscoketc()
-	example.Example_Webscokets()
+	//example.Example_Webscokets()
 	//example.Example_file()
 	//example.Example_bitnum()
 	//example.Example_socket_server()
 	//example.Example_socket_client()
+	example.Example_thread_map()
 
 	public.DBG_LOG("app")
 
 	for {
 		
-		public.DBG_LOG("hello world")
+		//public.DBG_LOG("hello world")
 
 		public.Sleep(1000)
 	}
