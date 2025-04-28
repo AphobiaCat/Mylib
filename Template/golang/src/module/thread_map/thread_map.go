@@ -124,22 +124,29 @@ func (this *Thread_Map[Key, Val]) New(new_key Key, new_val Val)bool{
 
 }
 
-func (this *Thread_Map[Key, Val]) New_Or_Update(new_key Key, new_val Val)bool{
+func (this *Thread_Map[Key, Val]) New_Or_Update(new_key Key, new_val Val)(last Val, is_update bool){
 	this.map_lock.Lock()	
 	map_index, exist := this.Map[new_key]
 	if exist{
 		this.map_lock.Unlock()
 		this.val_lock[map_index].Lock()
 		this.total_lock.Lock()
+		last = this.Val_Array[map_index]
 		this.Val_Array[map_index] = new_val
 		this.total_lock.Unlock()
 		this.val_lock[map_index].Unlock()
-		
-		return true
+
+		is_update = true
+		return last, is_update
 	}
 	this.map_lock.Unlock()
 
-	return this.New(new_key, new_val)
+	if succ := this.New(new_key, new_val); !succ{
+		public.DBG_ERR("key[", new_key, "] val[", new_val, "] create error")
+	}
+
+	last = new_val
+	return last, is_update
 }
 
 func (this *Thread_Map[Key, Val]) Delete(delete_key Key)bool{
