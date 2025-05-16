@@ -10,6 +10,30 @@ import(
 
 var jwtKey = []byte("my_secret_key")
 
+func Route_Generate_Jwt_By_Str(data string, expiration_time_s_option ...int)(string, bool){
+	expiration_time := 60 * 60
+
+	if len(expiration_time_s_option) != 0 && expiration_time_s_option[0] > 0{
+		expiration_time = expiration_time_s_option[0]
+	}
+
+	claims := jwt.MapClaims{
+		"data"	:	data,
+		"exp"	:   time.Now().Add(time.Duration(expiration_time) * time.Second).Unix(),
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	ret, err := token.SignedString(jwtKey)
+
+	if err != nil{
+		public.DBG_ERR("generate jwt failed. user data:", data)
+		return ret, false
+	}
+	
+	return ret, true
+}
+
+
 func Route_Generate_Jwt(data interface{}, expiration_time_s_option ...int)(string, bool){
 	expiration_time := 60 * 60
 

@@ -1,6 +1,8 @@
 use std::{thread, time};
 use serde::{Serialize, Deserialize};
 use serde_json::{self, Error as SerdeError};
+use rand::Rng;
+use base64::{engine::general_purpose, Engine};
 
 #[macro_export]
 macro_rules! DBG_LOG {
@@ -48,6 +50,18 @@ macro_rules! define_global_async {
     };
 }
 
+pub fn rand_u32() -> u32{
+    let mut rng = rand::rng();
+    let n: u32 = rng.random();           // generate a random num
+    n
+}
+
+pub fn rand_u64() -> u64{
+    let mut rng = rand::rng();
+    let n: u64 = rng.random();           // generate a random num
+    n
+}
+
 pub fn sleep_ms(duration_ms : u64){
     let duration = time::Duration::from_millis(duration_ms);
     thread::sleep(duration);
@@ -76,3 +90,34 @@ where
     serde_json::to_string(value)
 }
 
+pub fn encode<T: Serialize>(origin: &T, encode_key: u64) -> String {
+    let json = serde_json::to_vec(origin).expect("Serialization failed");
+
+    let key_bytes = encode_key.to_le_bytes();
+    let encoded_bytes: Vec<u8> = json.into_iter()
+        .enumerate()
+        .map(|(i, b)| b ^ key_bytes[i % 8])
+        .collect();
+    general_purpose::STANDARD.encode(encoded_bytes)
+}
+
+pub fn decode(base64_str: &str, decode_key: u64) -> String {
+    let bytes = general_purpose::STANDARD.decode(base64_str).expect("Base64 decoding failed");
+
+    let key_bytes = decode_key.to_le_bytes();
+    let mut decoded_bytes = bytes;
+
+    for (i, byte) in decoded_bytes.iter_mut().enumerate() {
+        *byte ^= key_bytes[i % 8];
+    }
+
+    String::from_utf8(decoded_bytes).expect("UTF-8 decoding failed after xor")
+}
+
+pub fn read_tiny_file(file_name: String) -> Result<String, std::io::Error>{
+
+    match std::fs::read_to_string(&file_name){
+        Ok(contents) => Ok(contents),
+        Err(e) => Err(e),
+    }
+}

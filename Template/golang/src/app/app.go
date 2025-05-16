@@ -12,6 +12,7 @@ import (
 	//"mylib/src/module/http_manager"
 	//"mylib/src/module/websocketc_manager"
 	//"mylib/src/module/websockets_manager"
+	//"mylib/src/module/websocket_route_manager"
 	//"mylib/src/module/file_manager"
 	//"mylib/src/module/bignum_manager"
 	//"mylib/src/module/socket_manager"
@@ -35,13 +36,14 @@ func APP_Entry() {
 	//example.Example_HTTP2()
 	//example.Example_Webscoketc()
 	//example.Example_Webscokets()
+	example.Example_Ws_Route()
 	//example.Example_file()
 	//example.Example_bitnum()
 	//example.Example_socket_server()
 	//example.Example_socket_client()
-	example.Example_thread_map()
+	//example.Example_thread_map()
 
-	public.DBG_LOG("app")
+	//public.DBG_LOG("app")
 
 	for {
 		
