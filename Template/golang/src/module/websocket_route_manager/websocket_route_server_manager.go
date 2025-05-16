@@ -21,9 +21,9 @@ var upgrader = websocket.Upgrader{
 }
 
 type ws_msg struct{
-	Token	string	`json:"token"`
-	Route	string	`json:"route"`
-	Payload	string	`json:"payload"`
+	Token	string	`json:"t"`
+	Route	string	`json:"r"`
+	Payload	string	`json:"p"`
 }
 
 var send_chan_map map[string]chan string
@@ -126,11 +126,13 @@ func ws_route_handler(w http.ResponseWriter, r *http.Request){
 			ret, succ := process(uid, recv_msg.Payload)
 
 			var ret_s struct{
-				Code 	int		`json:"code"`
-				Payload string	`json:"payload"`
+				Code 	int		`json:"c"`
+				Payload string	`json:"p"`
+				Route	string	`json:"r"`
 			}
 
-			ret_s.Payload = public.Build_Json(ret)
+			ret_s.Payload	= public.Build_Json(ret)
+			ret_s.Route		= recv_msg.Route
 			
 			if succ{
 				ret_s.Code = 0
@@ -153,15 +155,25 @@ func Route_WS_Exit(call_back func(string)){
 	ws_route_exit = call_back
 }
 
-func WS_Send_Msg(uid string, data interface{})bool{
+func WS_Send_Msg(uid string, data interface{}, user_route string)bool{
 	send_chan_map_lock.Lock()
 	send_chan, exist := send_chan_map[uid]
 	send_chan_map_lock.Unlock()
 
 	if exist{
-		send_chan <- public.Build_Json(data)
+		var ret_s struct{
+			Code 	int		`json:"c"`
+			Payload string	`json:"p"`
+			Route	string	`json:"r"`
+		}
+
+		ret_s.Payload	= public.Build_Json(data)
+		ret_s.Route		= user_route
+	
+		send_chan <- public.Build_Json(ret_s)
 		return true
-	}else{
+	}else
+{
 		return false
 	}
 }

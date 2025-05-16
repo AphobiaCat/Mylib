@@ -2,6 +2,6 @@
 members = [ 
     "dynamic_code", "exsamples",
     "main", "main_wasm",
-    "public",
+    "public", "route_websocket_client",
     "thread_manager", "wasm_thread_manager", "wasm_websocket_client"]
-resolver = "3"
+resolver = "2"

@@ -16,7 +16,7 @@ func test_ws_route_hello(uid string, payload string)(interface{}, bool){
 func test_ws_route_world(uid string, payload string)(interface{}, bool){
 	public.DBG_LOG("recv uid[", uid, "] payload[", payload, "] 2")
 
-	ws_route.WS_Send_Msg(uid, "hello world test")
+	ws_route.WS_Send_Msg(uid, "hello world test", "hello/world")
 
 	return "failed", false
 }

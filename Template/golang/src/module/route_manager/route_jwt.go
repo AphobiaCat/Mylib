@@ -63,7 +63,7 @@ func Route_Parser_Jwt(tokenString string)(string, bool){
 	})
 
 	if err != nil {
-		public.DBG_ERR("parser jwt failed. err:", err)
+		public.DBG_ERR("tokenString[", tokenString, "] parser jwt failed. err:", err)
 	
 		return "", false
 	}

@@ -1,10 +1,12 @@
 [package]
 name = "exsamples"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 
 [dependencies]
 
 public = { path = "../public" }
 dynamic_code = { path = "../dynamic_code"}
 thread_manager = { path = "../thread_manager"}
+route_websocket_client = { path = "../route_websocket_client"}
+tokio = "1.45.0"
