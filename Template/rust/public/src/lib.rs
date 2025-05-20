@@ -37,6 +37,13 @@ macro_rules! DBG_ERR {
 }
 
 #[macro_export]
+macro_rules! define_static {
+    ($name:ident, $ty:ty, $expr:expr) => {
+        static $name: once_cell::sync::Lazy<$ty> = once_cell::sync::Lazy::new(|| $expr);
+    };
+}
+
+#[macro_export]
 macro_rules! define_global {
     ($name:ident, $ty:ty, $expr:expr) => {
         static $name: once_cell::sync::Lazy<std::sync::Mutex<$ty>> = once_cell::sync::Lazy::new(|| std::sync::Mutex::new($expr));

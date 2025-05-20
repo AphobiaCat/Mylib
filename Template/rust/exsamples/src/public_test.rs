@@ -1,4 +1,4 @@
-use public::{DBG_LOG, parse_json, build_json};
+use public::{DBG_LOG, parse_json, build_json, define_static};
 
 pub fn test_public(){
     DBG_LOG!("hello world :", 123);
@@ -56,7 +56,14 @@ fn example2() {
     println!("val: {:?}", *val);
 }
 
+define_static!(TEST_NUM, u64, 123_u64);
+
 fn test_global(){
+
+    let test_num: u64 = *TEST_NUM;
+
+    DBG_LOG!("TEST_NUM:", test_num);
+
     example();
     example();
     example();
