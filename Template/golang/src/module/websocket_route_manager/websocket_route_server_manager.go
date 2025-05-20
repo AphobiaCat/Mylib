@@ -26,10 +26,16 @@ type ws_msg struct{
 	Payload	string	`json:"p"`
 }
 
+type route_process struct{
+	have_ret_process	func(string, string)(interface{}, bool)
+	not_ret_process		func(string, string)
+	have_ret			bool
+}
+
 var send_chan_map map[string]chan string
 var send_chan_map_lock sync.Mutex
 
-var ws_route_process map[string]func(string, string)(interface{}, bool)
+var ws_route_process map[string]route_process
 var ws_route_process_lock sync.Mutex
 
 var ws_route_exit func(string)
@@ -118,37 +124,59 @@ func ws_route_handler(w http.ResponseWriter, r *http.Request){
 			continue
 		}
 
+		var process route_process
+
 		ws_route_process_lock.Lock()
 		process, exist := ws_route_process[recv_msg.Route]
 		ws_route_process_lock.Unlock()
 
 		if exist{
-			ret, succ := process(uid, recv_msg.Payload)
 
-			var ret_s struct{
-				Code 	int		`json:"c"`
-				Payload string	`json:"p"`
-				Route	string	`json:"r"`
-			}
-
-			ret_s.Payload	= public.Build_Json(ret)
-			ret_s.Route		= recv_msg.Route
+			if process.have_ret{
+				ret, succ := process.have_ret_process(uid, recv_msg.Payload)
 			
-			if succ{
-				ret_s.Code = 0
+				var ret_s struct{
+					Code	int 	`json:"c"`
+					Payload string	`json:"p"`
+					Route	string	`json:"r"`
+				}
+	
+				ret_s.Payload	= public.Build_Json(ret)
+				ret_s.Route 	= recv_msg.Route
+				
+				if succ{
+					ret_s.Code = 0
+				}else{
+					ret_s.Code = -1
+				}
+	
+				send_msg_chan <- public.Build_Json(ret_s)
 			}else{
-				ret_s.Code = -1
+				process.not_ret_process(uid, recv_msg.Payload)
 			}
-
-			send_msg_chan <- public.Build_Json(ret_s)
 		}		
     }
 }
 
-func Route_WS(api string, call_back func(string, string)(interface{}, bool)){
+func Route_WS(api string, call_back interface{})bool{
+	var process route_process
+
+	switch call_back.(type){
+		case func(string, string)(interface{}, bool):
+			process.have_ret_process	= call_back.(func(string, string)(interface{}, bool))
+			process.have_ret			= true
+		case func(string, string):
+			process.not_ret_process		= call_back.(func(string, string))
+			process.have_ret			= false
+		default:
+			return false
+	}
+	
 	ws_route_process_lock.Lock()
-	ws_route_process[api] = call_back
+	ws_route_process[api] = process
 	ws_route_process_lock.Unlock()
+
+	return true
 }
 
 func Route_WS_Exit(call_back func(string)){
@@ -196,7 +224,11 @@ func Init_Ws_Route(bind_addr string){
 
 
 func init(){
+
+	test_jwt_token, _ := route.Route_Generate_Jwt_By_Str("dunty", 86400)
+	public.DBG_LOG("test[", test_jwt_token, "]")
+
 	send_chan_map = make(map[string]chan string)
-	ws_route_process = make(map[string]func(string, string)(interface{}, bool))
+	ws_route_process = make(map[string]route_process)
 }
 
