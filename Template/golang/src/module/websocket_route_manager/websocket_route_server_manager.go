@@ -9,6 +9,7 @@ import(
 	"net"
 	"net/http"
     "github.com/gorilla/websocket"
+    "time"
 
 )
 
@@ -73,8 +74,10 @@ func ws_route_handler(w http.ResponseWriter, r *http.Request){
 	close_client_chan	:= make(chan bool)
 
     go func() {
+		ticker := time.NewTicker(30 * time.Second)
+    	defer ticker.Stop()
+    	
         for {
-
 			select{
 				case <- close_client_chan:
 					return
@@ -82,7 +85,10 @@ func ws_route_handler(w http.ResponseWriter, r *http.Request){
 				case msg := <- send_msg_chan:
 					if err := conn.WriteMessage(websocket.TextMessage, []byte(msg)); err != nil {
 				    	public.DBG_ERR(err)
+				    	return
 					}
+				case <-ticker.C:
+					send_msg_chan <- "p"
 			}
         }
     }()
@@ -91,15 +97,16 @@ func ws_route_handler(w http.ResponseWriter, r *http.Request){
 
     have_init := false
 
+	local_process_map := make(map[string]route_process)
+
     for {
 		var recv_msg ws_msg
-    
+
         _, msg, err := conn.ReadMessage()
         if err != nil {
         	public.DBG_ERR(err)
             return
         }
-
 		public.Parser_Json(string(msg), &recv_msg)
 
 		uid, succ := route.Route_Parser_Jwt(recv_msg.Token)
@@ -124,36 +131,52 @@ func ws_route_handler(w http.ResponseWriter, r *http.Request){
 			continue
 		}
 
-		var process route_process
+		process, exist := local_process_map[recv_msg.Route]
 
-		ws_route_process_lock.Lock()
-		process, exist := ws_route_process[recv_msg.Route]
-		ws_route_process_lock.Unlock()
+		if !exist{
+			ws_route_process_lock.Lock()
+			process, exist = ws_route_process[recv_msg.Route]
+			ws_route_process_lock.Unlock()
+
+			if exist{
+				local_process_map[recv_msg.Route] = process
+			}
+		}
 
 		if exist{
-
-			if process.have_ret{
-				ret, succ := process.have_ret_process(uid, recv_msg.Payload)
-			
-				var ret_s struct{
-					Code	int 	`json:"c"`
-					Payload string	`json:"p"`
-					Route	string	`json:"r"`
-				}
-	
-				ret_s.Payload	= public.Build_Json(ret)
-				ret_s.Route 	= recv_msg.Route
+			go func(){
 				
-				if succ{
-					ret_s.Code = 0
+defer func(){
+					if err := recover(); err != nil{
+						public.DBG_ERR("err:", err)
+					}
+				}()
+			
+				if process.have_ret{
+					ret, succ := process.have_ret_process(uid, recv_msg.Payload)
+				
+					var ret_s struct{
+						Code	int 	`json:"c"`
+						Payload string	`json:"p"`
+						Route	string	`json:"r"`
+					}
+		
+					ret_s.Payload	= public.Build_Json(ret)
+					ret_s.Route 	= recv_msg.Route
+					
+					if succ{
+						ret_s.Code = 0
+					}else{
+						ret_s.Code = -1
+					}
+		
+					send_msg_chan <- public.Build_Json(ret_s)
 				}else{
-					ret_s.Code = -1
+					process.not_ret_process(uid, recv_msg.Payload)
 				}
-	
-				send_msg_chan <- public.Build_Json(ret_s)
-			}else{
-				process.not_ret_process(uid, recv_msg.Payload)
-			}
+			}()
+		}else{
+			public.DBG_ERR("this route[", recv_msg.Route, "] no exist")
 		}		
     }
 }
@@ -224,10 +247,6 @@ func Init_Ws_Route(bind_addr string){
 
 
 func init(){
-
-	test_jwt_token, _ := route.Route_Generate_Jwt_By_Str("dunty", 86400)
-	public.DBG_LOG("test[", test_jwt_token, "]")
-
 	send_chan_map = make(map[string]chan string)
 	ws_route_process = make(map[string]route_process)
 }

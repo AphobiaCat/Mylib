@@ -12,7 +12,7 @@ func Rand(max_num int)int{
 	return rand.Intn(max_num)
 }
 
-func Rand_U64(max_num uint64)uint64{
+func Rand_U64()uint64{
 	return rand.Uint64()
 }
 

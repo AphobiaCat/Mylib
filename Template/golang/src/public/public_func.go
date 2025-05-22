@@ -14,6 +14,11 @@ func Now_Time_S() int64{
     return seconds
 }
 
+func Now_Time_MS() int64{
+	ms := time.Now().UnixMilli()
+    return ms
+}
+
 func Sleep(sleep_ms int){
 	time.Sleep(time.Duration(sleep_ms) * time.Millisecond)
 }
