@@ -70,8 +70,8 @@ func ws_route_handler(w http.ResponseWriter, r *http.Request){
 		}
 	}()
 
-	send_msg_chan		:= make(chan string)
-	close_client_chan	:= make(chan bool)
+	send_msg_chan		:= make(chan string, 8)
+	close_client_chan	:= make(chan bool, 2)
 
     go func() {
 		ticker := time.NewTicker(30 * time.Second)
@@ -88,7 +88,13 @@ func ws_route_handler(w http.ResponseWriter, r *http.Request){
 				    	return
 					}
 				case <-ticker.C:
-					send_msg_chan <- "p"
+					if len(send_msg_chan) == 0 {
+				        select {
+				        case send_msg_chan <- "p":
+				        default:
+				            // avoid block.
+				        }
+				    }
 			}
         }
     }()
@@ -146,7 +152,7 @@ func ws_route_handler(w http.ResponseWriter, r *http.Request){
 		if exist{
 			go func(){
 				
-defer func(){
+				defer func(){
 					if err := recover(); err != nil{
 						public.DBG_ERR("err:", err)
 					}
@@ -220,6 +226,8 @@ func WS_Send_Msg(uid string, data interface{}, user_route string)bool{
 
 		ret_s.Payload	= public.Build_Json(data)
 		ret_s.Route		= user_route
+
+		public.DBG_LOG("send msg to[", uid, "]")
 	
 		send_chan <- public.Build_Json(ret_s)
 		return true
