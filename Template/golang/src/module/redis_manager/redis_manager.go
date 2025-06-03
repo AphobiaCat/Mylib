@@ -6,6 +6,7 @@ import (
     "sync"
 
     "mylib/src/public"
+    "mylib/src/module/app"
 )
 
 
@@ -204,14 +205,27 @@ func Stack_Get(redis_key string)(string, bool){
 
 func init(){
 
+	redis_global_param_exist := true
+
+	redis_ip, e		:= app.Global[string]("redis_ip")
+	redis_global_param_exist = redis_global_param_exist && e
+	redis_passwd, e	:= app.Global[string]("redis_passwd")
+	redis_global_param_exist = redis_global_param_exist && e
+	redis_db, e		:= app.Global[float64]("redis_db")
+	redis_global_param_exist = redis_global_param_exist && e
+
+	if !redis_global_param_exist{
+		panic("redis no config")
+	}
+
 	redis_manager.value_lock_index = make(map[string]int)
 
 	redis_manager.ctx = context.Background()
 
 	redis_manager.rdb = redis.NewClient(&redis.Options{
-		Addr:     public.Redis_Server_Ip,
-		Password: public.Redis_Server_Passwd,
-		DB:       public.Redis_DB,    
+		Addr:     redis_ip,
+		Password: redis_passwd,
+		DB:       int(redis_db),    
 	})
 	
 	_, err := redis_manager.rdb.Ping(redis_manager.ctx).Result()

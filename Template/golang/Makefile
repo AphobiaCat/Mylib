@@ -10,13 +10,7 @@ DEV_SRC=./src/main.go
 
 ENTRY=APP_Entry
 
-ENV_FILE_PRODUCT=./src/public/env.go.product
-ENV_FILE_DEV=./src/public/env.go.dev
-ENV_FILE=./src/public/env.go
-
 all:
-	cp ${ENV_FILE_PRODUCT} ${ENV_FILE}
-
 	cp ${APP_MAIN_PATH} ${APP_SRC}
 
 	echo "`sed 's/${ENTRY}/main/g' ${APP_SRC}`" > ${APP_SRC}
@@ -26,8 +20,6 @@ all:
 	rm -f ${APP_SRC}
 
 debug:
-	cp ${ENV_FILE_DEV} ${ENV_FILE}
-
 	cp ${APP_MAIN_PATH} ${APP_SRC}
 
 	echo "`sed 's/${ENTRY}/main/g' ${APP_SRC}`" > ${APP_SRC}

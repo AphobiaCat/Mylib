@@ -1,0 +1,9 @@
+{
+	"database_name": "test",
+	"database_user": "Dunty",
+	"database_passwd": "123123Dunty",
+	"database_ip": "192.168.136.130:3306",
+	"redis_ip": "192.168.136.130:6379",
+	"redis_passwd": "123123Dunty",
+	"redis_db": 2
+}

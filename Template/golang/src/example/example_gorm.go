@@ -20,7 +20,7 @@ type Test_GORM_Data struct {
 }
 
 func example_gorm(){
-	gorm_manager.Init_Gorm(public.Dsn_Str, &Test_GORM_Data{})
+	gorm_manager.Init_Gorm(&Test_GORM_Data{})
 
 	tgd		:= Test_GORM_Data{Name:"Dunty", Email:"Dunty@gmail.com", Password:"123"}
 	tgd2	:= Test_GORM_Data{Name:"Cirila", Email:"Cirila@Gmail.com", Password:"123"}
@@ -75,7 +75,7 @@ type Comment struct {
 func Example_2_Gorm(){
 	//if wanna retest , should add "gm.db.Migrator().DropTable(models...)" to gorm_manager.go before gm.db.AutoMigrate(models...)
 
-	gorm_manager.Init_Gorm(public.Dsn_Str, &User{}, &Comment{})
+	gorm_manager.Init_Gorm(&User{}, &Comment{})
 
 	user1 := User{ID:"123456", Name:"Cirila", Email:"Cirila@gmail.com"}	
 	user2 := User{ID:"789101", Name:"Dunty"	, Email:"Dunty@gmail.com"}

@@ -14,7 +14,7 @@ type UsrInfo struct{
 
 func Example_Cachesql(){
 
-	gorm_manager.Init_Gorm(public.Dsn_Str, &UsrInfo{})
+	gorm_manager.Init_Gorm(&UsrInfo{})
 
 	gorm_manager.Gorm_Create(&UsrInfo{Name:"Dunty", Age:25, Email:"Dunty@gmail.com"})
 

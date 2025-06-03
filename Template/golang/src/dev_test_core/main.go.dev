@@ -108,7 +108,7 @@ func main() {
 			public.DBG_LOG("wait compile:", string(compile_output))
 		}
 
-		app := exec.Command("./target_op_file")
+		app := exec.Command("./target_op_file", os.Args[1:]...)
 
 		stdout, err := app.StdoutPipe()
 		if err != nil {

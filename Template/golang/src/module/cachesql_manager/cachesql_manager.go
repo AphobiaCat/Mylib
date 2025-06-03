@@ -6,6 +6,7 @@ import (
     "time"
 
     "mylib/src/public"
+    "mylib/src/module/app"
 )	
 
 var cache_sql_manager Cache_Sql_Manager
@@ -237,7 +238,21 @@ func Get_Cache(key string, new_cache_func New_Cache_Func, config_time ...int64) 
 }
 
 func init() {
-	cache_sql_manager.Init(public.Redis_Server_Ip, public.Redis_Server_Passwd, public.Redis_DB)
+
+	redis_global_param_exist := true
+
+	redis_ip, e		:= app.Global[string]("redis_ip")
+	redis_global_param_exist = redis_global_param_exist && e
+	redis_passwd, e	:= app.Global[string]("redis_passwd")
+	redis_global_param_exist = redis_global_param_exist && e
+	redis_db, e		:= app.Global[float64]("redis_db")
+	redis_global_param_exist = redis_global_param_exist && e
+
+	if !redis_global_param_exist{
+		panic("redis no config")
+	}
+
+	cache_sql_manager.Init(redis_ip, redis_passwd, int(redis_db))
 }
 
 
