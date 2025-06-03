@@ -157,6 +157,7 @@ name = "dynamic_code"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "once_cell",
  "public",
  "rune",
  "rune-modules",

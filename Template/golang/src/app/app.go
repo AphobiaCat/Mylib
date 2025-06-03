@@ -36,12 +36,13 @@ func APP_Entry() {
 	//example.Example_HTTP2()
 	//example.Example_Webscoketc()
 	//example.Example_Webscokets()
-	example.Example_Ws_Route()
+	//example.Example_Ws_Route()
 	//example.Example_file()
 	//example.Example_bitnum()
 	//example.Example_socket_server()
 	//example.Example_socket_client()
 	//example.Example_thread_map()
+	example.Example_app()
 
 	//public.DBG_LOG("app")
 

@@ -1,11 +1,31 @@
-use std::sync::Arc;
-
 use rune::alloc::String as RuneString;
 use rune::runtime::{Args, FromValue, GuardedArgs, Shared, Vm, VmResult};
 // use rune::termcolor::{ColorChoice, StandardStream, Buffer};
 use rune::termcolor::Buffer;
-use rune::{Diagnostics, Source, Sources, Value};
+use rune::{Module, Diagnostics, Source, Sources, Value, ContextError};
 use rune_modules::default_context;
+
+use once_cell::sync::Lazy;
+use std::sync::{Arc, Mutex};
+
+static MODULE_REGISTRY: Lazy<Mutex<Vec<Box<dyn Fn(&mut Module) -> Result<(), ContextError> + Send + Sync>>>> =
+    Lazy::new(|| Mutex::new(Vec::new()));
+
+pub fn register_rust_function_i64(name: &'static str, func: fn(i64) -> i64) {
+    let register = Box::new(move |module: &mut Module| {
+        module.function([name], func).build()?;
+        Ok(())
+    });
+    MODULE_REGISTRY.lock().unwrap().push(register);
+}
+
+pub fn register_rust_function_matrix(name: &'static str, func: fn(Vec<Vec<f32>>, Vec<Vec<f32>>) -> Vec<Vec<f32>>) {
+    let register = Box::new(move |module: &mut Module| {
+        module.function([name], func).build()?;
+        Ok(())
+    });
+    MODULE_REGISTRY.lock().unwrap().push(register);
+}
 
 pub struct DynamicCode {
     vm: Vm,
@@ -14,7 +34,14 @@ pub struct DynamicCode {
 
 impl DynamicCode {
     pub fn new(script: &str) -> Result<Self, Box<dyn std::error::Error>> {
-        let context = default_context()?;
+        let mut context = default_context()?;
+
+        let mut module = Module::new();
+        for reg in MODULE_REGISTRY.lock().unwrap().iter() {
+            reg(&mut module)?;
+        }
+        context.install(module)?;
+
         let mut sources = Sources::new();
         let _ = sources.insert(Source::new("main", script).expect("invalid source"));
 
@@ -130,3 +157,5 @@ fn json_to_rune(value: &serde_json::Value) -> Result<Value, Box<dyn std::error::
         // _ => unreachable!("Unexpected Value variant"),
     })
 }
+
+

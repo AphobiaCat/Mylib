@@ -2,6 +2,9 @@
 all:
 	cargo build -j 8 -p main
 
+exsamples:
+	cargo build -j 8 -p exsamples
+
 release:
 	cargo build -j 8 -p main --release
 
