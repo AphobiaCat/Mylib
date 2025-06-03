@@ -222,6 +222,14 @@ func (csm *Cache_Sql_Manager) Get_Cache(key string, new_cache_func New_Cache_Fun
 	return cache_data.D
 }
 
+func (csm *Cache_Sql_Manager) Del_Cache(key string) {
+	err := csm.rdb.Del(csm.ctx, key)
+	if err != nil{
+		public.DBG_ERR("del cache err:", err)
+	}
+}
+
+
 func Set_Cache(key string, value interface{}, config_time ...int64){
 	//config_time[0]	force_update_time
 	//config_time[1]	max_work_time
@@ -237,6 +245,11 @@ func Get_Cache(key string, new_cache_func New_Cache_Func, config_time ...int64) 
 	
 	return cache_sql_manager.Get_Cache(key, new_cache_func, config_time...)
 }
+
+func Del_Cache(key string) {
+	cache_sql_manager.Del_Cache(key)
+}
+
 
 func init() {
 
