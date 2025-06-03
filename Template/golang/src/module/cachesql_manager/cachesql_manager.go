@@ -174,46 +174,47 @@ func (csm *Cache_Sql_Manager) Get_Cache(key string, new_cache_func New_Cache_Fun
 		return new_data_str
 
 	} else if ((now_time - cache_data.L >= force_update_time) && !cache_data.W) || ((cache_data.LW != 0) && (now_time - cache_data.LW >= max_work_time)) {		
-		
-		var new_cache_data Standard_CSM_Cache
-		new_cache_data.D	= cache_data.D
-		new_cache_data.L	= now_time
-		new_cache_data.LW	= now_time
-		new_cache_data.W	= true
-		new_cache_data.Wait	= false
 
-		err := csm.rdb.Set(csm.ctx, key, public.Build_Json(new_cache_data), time.Duration(max_alive_time)).Err()
-		if err != nil {
-			public.DBG_ERR("set value failed", err)
-			return ""
-		}
+		go func(){
+			var new_cache_data Standard_CSM_Cache
+			new_cache_data.D	= cache_data.D
+			new_cache_data.L	= now_time
+			new_cache_data.LW	= now_time
+			new_cache_data.W	= true
+			new_cache_data.Wait = false
+	
+			err := csm.rdb.Set(csm.ctx, key, public.Build_Json(new_cache_data), time.Duration(max_alive_time)).Err()
+			if err != nil {
+				public.DBG_ERR("set value failed", err)
+			}
+	
+			defer func() {
+				if r := recover(); r != nil {
+					public.DBG_ERR("err:", r)
+					csm.rdb.Del(csm.ctx, key)
+				}
+			}()
+	
+			new_data := new_cache_func()
+	
+			new_data_str := public.Build_Json(new_data)
+	
+			now_time = public.Now_Time_S()
+	
+			new_cache_data.D	= new_data_str
+			new_cache_data.L	= now_time
+			new_cache_data.LW	= 0
+			new_cache_data.W	= false
+			new_cache_data.Wait = false
+	
+			err = csm.rdb.Set(csm.ctx, key, public.Build_Json(new_cache_data), time.Duration(max_alive_time)).Err()
+			if err != nil {
+				public.DBG_ERR("set value failed", err)
 
-		defer func() {
-			if r := recover(); r != nil {
-				public.DBG_ERR("err:", r)
-				csm.rdb.Del(csm.ctx, key)
 			}
 		}()
 
-		new_data := new_cache_func()
-
-		new_data_str := public.Build_Json(new_data)
-
-		now_time = public.Now_Time_S()
-
-		new_cache_data.D	= new_data_str
-		new_cache_data.L	= now_time
-		new_cache_data.LW	= 0
-		new_cache_data.W	= false
-		new_cache_data.Wait	= false
-
-		err = csm.rdb.Set(csm.ctx, key, public.Build_Json(new_cache_data), time.Duration(max_alive_time)).Err()
-		if err != nil {
-			public.DBG_ERR("set value failed", err)
-			return new_data_str
-		}
-
-		return new_data_str
+		return cache_data.D		
 	}
 
 	//public.DBG_LOG("now_time - cache_data.L: ", (now_time - cache_data.L), "    force_update_time:", force_update_time)
