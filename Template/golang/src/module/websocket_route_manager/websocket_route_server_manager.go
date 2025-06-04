@@ -22,15 +22,19 @@ var upgrader = websocket.Upgrader{
 }
 
 type ws_msg struct{
-	Token	string	`json:"t"`
-	Route	string	`json:"r"`
-	Payload	string	`json:"p"`
+	Token			string	`json:"t"`
+	Route			string	`json:"r"`
+	Payload			string	`json:"p"`
 }
 
 type route_process struct{
-	have_ret_process	func(string, string)(interface{}, bool)
-	not_ret_process		func(string, string)
+	have_ret_process				func(string, string)(interface{}, bool)
+	not_ret_process					func(string, string)
+	big_payload_have_ret_process	func(string, string, string)(interface{}, bool)
+	big_payload_not_ret_process		func(string, string, string)
+	
 	have_ret			bool
+	have_big_payload	bool
 }
 
 var send_chan_map map[string]chan string
@@ -106,14 +110,24 @@ func ws_route_handler(w http.ResponseWriter, r *http.Request){
 	local_process_map := make(map[string]route_process)
 
     for {
-		var recv_msg ws_msg
-
+		
         _, msg, err := conn.ReadMessage()
         if err != nil {
         	public.DBG_ERR(err)
             return
         }
-		public.Parser_Json(string(msg), &recv_msg)
+
+		origin_msg	:= string(msg)
+
+		header_len_str	:= origin_msg[0:4]
+
+		header_len	:= public.ConvertHEXStrToUint32(header_len_str)
+		header		:= origin_msg[4:(4 + header_len)]
+
+		public.DBG_LOG("len[", header_len, "] header[", header, "]")
+		
+		var recv_msg ws_msg
+		public.Parser_Json(header, &recv_msg)
 
 		uid, succ := route.Route_Parser_Jwt(recv_msg.Token)
 
@@ -157,33 +171,36 @@ func ws_route_handler(w http.ResponseWriter, r *http.Request){
 						public.DBG_ERR("err:", err)
 					}
 				}()
-			
-				if process.have_ret{
-					ret, succ := process.have_ret_process(uid, recv_msg.Payload)
-				
-					var ret_s struct{
-						Code	int 	`json:"c"`
-						Payload string	`json:"p"`
-						Route	string	`json:"r"`
-					}
-		
-					ret_s.Payload	= public.Build_Json(ret)
-					ret_s.Route 	= recv_msg.Route
-					
-					if succ{
-						ret_s.Code = 0
+
+				if process.have_big_payload{
+					if process.have_ret{
+						ret, succ := process.big_payload_have_ret_process(uid, recv_msg.Payload, origin_msg[(4 + header_len):])
+						
+						if succ{
+							send_msg_chan <- build_ret_msg(0, recv_msg.Route, public.Build_Json(ret))
+						}else{
+							send_msg_chan <- build_ret_msg(-1, recv_msg.Route, public.Build_Json(ret))
+						}
 					}else{
-						ret_s.Code = -1
+						process.big_payload_not_ret_process(uid, recv_msg.Payload, origin_msg[(4 + header_len):])
 					}
-		
-					send_msg_chan <- public.Build_Json(ret_s)
 				}else{
-					process.not_ret_process(uid, recv_msg.Payload)
+					if process.have_ret{
+						ret, succ := process.have_ret_process(uid, recv_msg.Payload)
+					
+						if succ{
+							send_msg_chan <- build_ret_msg(0, recv_msg.Route, public.Build_Json(ret))
+						}else{
+							send_msg_chan <- build_ret_msg(-1, recv_msg.Route, public.Build_Json(ret))
+						}
+					}else{
+						process.not_ret_process(uid, recv_msg.Payload)
+					}
 				}
 			}()
 		}else{
 			public.DBG_ERR("this route[", recv_msg.Route, "] no exist")
-		}		
+		}
     }
 }
 
@@ -192,11 +209,20 @@ func Route_WS(api string, call_back interface{})bool{
 
 	switch call_back.(type){
 		case func(string, string)(interface{}, bool):
-			process.have_ret_process	= call_back.(func(string, string)(interface{}, bool))
-			process.have_ret			= true
+			process.have_ret_process				= call_back.(func(string, string)(interface{}, bool))
+			process.have_ret						= true
 		case func(string, string):
-			process.not_ret_process		= call_back.(func(string, string))
-			process.have_ret			= false
+			process.not_ret_process					= call_back.(func(string, string))
+			process.have_ret						= false
+		case func(string, string, string)(interface{}, bool):
+			process.big_payload_have_ret_process	= call_back.(func(string, string, string)(interface{}, bool))
+			process.have_ret						= true
+			process.have_big_payload				= true
+		case func(string, string, string):
+			process.big_payload_not_ret_process 	= call_back.(func(string, string, string))
+			process.have_ret						= false
+			process.have_big_payload				= true
+			
 		default:
 			return false
 	}
@@ -212,27 +238,47 @@ func Route_WS_Exit(call_back func(string)){
 	ws_route_exit = call_back
 }
 
-func WS_Send_Msg(uid string, data interface{}, user_route string)bool{
+
+func build_ret_msg(code int, user_route string, data interface{}, big_payload_option ...interface{})string{
+
+	var ret_s struct{
+		Code 			int		`json:"c"`
+		Route			string	`json:"r"`
+		Payload 		string	`json:"p"`
+	}
+	
+	ret_s.Code		= code
+	ret_s.Route		= user_route
+	ret_s.Payload	= public.Build_Json(data)
+
+	ret_str := public.Build_Json(ret_s)
+
+	ret_str_len := public.ConvertUint32ToHexString(uint32(len(ret_str)))[2:]
+	
+	if len(ret_str_len) != 4{
+		fill_zero := "0000"
+		ret_str_len = fill_zero[4 - len(ret_str_len):] + ret_str_len
+	}
+
+	ret_msg := ret_str_len + ret_str
+
+	if len(big_payload_option) != 0{
+		if big_payload, ok := big_payload_option[0].(string); ok{
+			ret_msg += big_payload
+		}
+	}
+	return ret_msg
+}
+
+func WS_Send_Msg(uid string, user_route string, data interface{}, big_payload_option ...interface{})bool{
 	send_chan_map_lock.Lock()
 	send_chan, exist := send_chan_map[uid]
 	send_chan_map_lock.Unlock()
 
 	if exist{
-		var ret_s struct{
-			Code 	int		`json:"c"`
-			Payload string	`json:"p"`
-			Route	string	`json:"r"`
-		}
-
-		ret_s.Payload	= public.Build_Json(data)
-		ret_s.Route		= user_route
-
-		public.DBG_LOG("send msg to[", uid, "]")
-	
-		send_chan <- public.Build_Json(ret_s)
+		send_chan <- build_ret_msg(0, user_route, data, big_payload_option...)
 		return true
-	}else
-{
+	}else{
 		return false
 	}
 }
@@ -255,7 +301,7 @@ func Init_Ws_Route(bind_addr string){
 
 
 func init(){
-	send_chan_map = make(map[string]chan string)
-	ws_route_process = make(map[string]route_process)
+	send_chan_map		= make(map[string]chan string)
+	ws_route_process	= make(map[string]route_process)
 }
 
