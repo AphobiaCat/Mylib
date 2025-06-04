@@ -26,6 +26,6 @@ pub async fn test_route_ws_client() {
 
 	ws.start_ws();
 
-    ws.send("hello".to_string(), "hello world".to_string(), "".to_string()).await;
-	ws.send("big-payload".to_string(), "hello world".to_string(), "hello big payload".to_string()).await;
+    ws.send("hello".to_string(), "hello world".to_string()).await;
+	ws.send_big_payload("big-payload".to_string(), "hello world".to_string(), "hello big payload".to_string()).await;
 }

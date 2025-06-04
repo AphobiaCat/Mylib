@@ -109,7 +109,6 @@ impl WsClient {
                                 Some(Ok(msg)) = ws_stream.next() => {
                                     if let Message::Text(text) = msg {
 
-
                                         if text.len() < 4 {
                                             continue;
                                         }
@@ -172,7 +171,11 @@ impl WsClient {
         });
     }
 
-    pub async fn send(&self, route: String, payload: String, big_payload: String) {
+    pub async fn send(&self, route: String, payload: String) {
+        self.send_big_payload(route, payload, "".to_string()).await;
+    }
+
+    pub async fn send_big_payload(&self, route: String, payload: String, big_payload: String) {
         let (msg, tx) = {
             let locked: std::sync::MutexGuard<'_, WsClientInner> = self.inner.lock().unwrap();
             let req = WsRequest {
@@ -193,21 +196,6 @@ impl WsClient {
             let mut final_msg = hex_len + &json_str + &big_payload;
 
             (final_msg, locked.tx.clone())
-        };
-
-        let _ = tx.send(msg).await;
-    }
-
-    pub async fn send_big_payload(&self, route: String, payload: String, big_payload: String) {
-        let (msg, tx) = {
-            let locked = self.inner.lock().unwrap();
-            let req = WsRequest {
-                t: locked.uid.clone(),
-                r: route,
-                p: payload,
-            };
-            let msg = serde_json::to_string(&req).unwrap();
-            (msg, locked.tx.clone())
         };
 
         let _ = tx.send(msg).await;
