@@ -12,7 +12,8 @@ import (
 // ----------------Function>
 
 func APP_Entry() {	
-	
+
+	example.Example_app()
 	//example.Example_Redis_Manager()
 	//example.Example_Json_Op()
 	//example.Example_Timer_Manager()
@@ -23,7 +24,7 @@ func APP_Entry() {
 	//example.Example_HTTP2()
 	//example.Example_Webscoketc()
 	//example.Example_Webscokets()
-	example.Example_Ws_Route()
+	//example.Example_Ws_Route()
 	//example.Example_file()
 	//example.Example_bitnum()
 	//example.Example_socket_server()

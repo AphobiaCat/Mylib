@@ -4,9 +4,9 @@ import (
 	"context"
     "github.com/redis/go-redis/v9"
     "time"
+    "crypto/tls"
 
     "mylib/src/public"
-    "mylib/src/module/app"
 )	
 
 var cache_sql_manager Cache_Sql_Manager
@@ -26,15 +26,24 @@ type Standard_CSM_Cache struct {
 
 type New_Cache_Func func() interface{}
 
-func (csm *Cache_Sql_Manager) Init(server_ip string, password string, DB int) {
+func (csm *Cache_Sql_Manager) Init(server_ip string, password string, DB int, enable_tls bool) {
 
 	csm.ctx = context.Background()
 
-	csm.rdb = redis.NewClient(&redis.Options{
-		Addr: server_ip,
-		Password: password,
-		DB: DB,
-	})
+	if enable_tls{
+		csm.rdb = redis.NewClient(&redis.Options{
+			Addr: server_ip,
+			Password: password,
+			DB: DB,
+			TLSConfig: &tls.Config{},
+		})
+	}else{
+		csm.rdb = redis.NewClient(&redis.Options{
+			Addr: server_ip,
+			Password: password,
+			DB: DB,
+		})
+	}
 
 	_, err := csm.rdb.Ping(csm.ctx).Result()
 
@@ -252,21 +261,7 @@ func Del_Cache(key string) {
 
 
 func init() {
-
-	redis_global_param_exist := true
-
-	redis_ip, e		:= app.Global[string]("redis_ip")
-	redis_global_param_exist = redis_global_param_exist && e
-	redis_passwd, e	:= app.Global[string]("redis_passwd")
-	redis_global_param_exist = redis_global_param_exist && e
-	redis_db, e		:= app.Global[float64]("redis_db")
-	redis_global_param_exist = redis_global_param_exist && e
-
-	if !redis_global_param_exist{
-		panic("redis no config")
-	}
-
-	cache_sql_manager.Init(redis_ip, redis_passwd, int(redis_db))
+	cache_sql_manager.Init(public.Config.Redis.Ip, public.Config.Redis.Password, public.Config.Redis.DB, public.Config.Redis.EnableTls)
 }
 
 

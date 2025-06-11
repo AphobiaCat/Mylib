@@ -49,23 +49,23 @@ func example_gorm(){
 //========================================================================================
 
 
-type User struct {
+type Test_GORM_User struct {
     ID       string    `gorm:"primaryKey"`
     Name     string    `gorm:"size:100"`
     Email    string    `gorm:"size:100;uniqueIndex"`
-    Comments []Comment `gorm:"foreignKey:UserID"`
+    Comments []Test_GORM_Comment `gorm:"foreignKey:UserID"`
 
     CreatedAt	time.Time 	// auto add create time
 	UpdatedAt	time.Time	// auto add update time
 }
 
-type Comment struct {
+type Test_GORM_Comment struct {
     ID        uint      `gorm:"primaryKey;autoIncrement"`
     Content   string    `gorm:"type:text"`
     UserID    string	`gorm:"index"` 					// foreignKey, connect user
     ParentID  *uint     `gorm:"index"` 					// self index, use *uint because this can be null
     Mint      string    `gorm:"size:100;index"` 		// use to query
-    Replies   []Comment `gorm:"foreignKey:ParentID"` 	// sub comment self connect
+    Replies   []Test_GORM_Comment `gorm:"foreignKey:ParentID"` 	// sub comment self connect
 
     CreatedAt	time.Time 	// auto add create time
 	UpdatedAt	time.Time	// auto add update time
@@ -75,11 +75,11 @@ type Comment struct {
 func Example_2_Gorm(){
 	//if wanna retest , should add "gm.db.Migrator().DropTable(models...)" to gorm_manager.go before gm.db.AutoMigrate(models...)
 
-	gorm_manager.Init_Gorm(&User{}, &Comment{})
+	gorm_manager.Init_Gorm(&Test_GORM_User{}, &Test_GORM_Comment{})
 
-	user1 := User{ID:"123456", Name:"Cirila", Email:"Cirila@gmail.com"}	
-	user2 := User{ID:"789101", Name:"Dunty"	, Email:"Dunty@gmail.com"}
-	user3 := User{ID:"112131", Name:"World"	, Email:"World@gmail.com"}
+	user1 := Test_GORM_User{ID:"123456", Name:"Cirila", Email:"Cirila@gmail.com"}	
+	user2 := Test_GORM_User{ID:"789101", Name:"Dunty"	, Email:"Dunty@gmail.com"}
+	user3 := Test_GORM_User{ID:"112131", Name:"World"	, Email:"World@gmail.com"}
 	
 	gorm_manager.Gorm_Create(&user1)
 	gorm_manager.Gorm_Create(&user2)
@@ -95,16 +95,16 @@ func Example_2_Gorm(){
 
 	public.DBG_LOG("create comment")
 
-	comment  := Comment{Content:"Hello World1", UserID:"123456", Mint:"0x1"}
-	comment1 := Comment{Content:"Hello World2", UserID:"112131", Mint:"0x1"		, ParentID:&tmp_num}
-	comment2 := Comment{Content:"Hello World3", UserID:"112131", Mint:"0x1"}
-	comment3 := Comment{Content:"Hello World4", UserID:"789101", Mint:"0x1"}
-	comment4 := Comment{Content:"Hello World5", UserID:"123456", Mint:"0x1"		, ParentID:&tmp_num}
-	comment5 := Comment{Content:"Hello World6", UserID:"789101", Mint:"0x1"}
-	comment6 := Comment{Content:"Hello World7", UserID:"112131", Mint:"0x1"		, ParentID:&tmp_num2}
-	comment7 := Comment{Content:"Hello World8", UserID:"123456", Mint:"0x1"}
-	comment8 := Comment{Content:"Hello World9", UserID:"789101", Mint:"0x1"}
-	comment9 := Comment{Content:"Hello World10", UserID:"112131", Mint:"0x1"		, ParentID:&tmp_num3}
+	comment  := Test_GORM_Comment{Content:"Hello World1", UserID:"123456", Mint:"0x1"}
+	comment1 := Test_GORM_Comment{Content:"Hello World2", UserID:"112131", Mint:"0x1"		, ParentID:&tmp_num}
+	comment2 := Test_GORM_Comment{Content:"Hello World3", UserID:"112131", Mint:"0x1"}
+	comment3 := Test_GORM_Comment{Content:"Hello World4", UserID:"789101", Mint:"0x1"}
+	comment4 := Test_GORM_Comment{Content:"Hello World5", UserID:"123456", Mint:"0x1"		, ParentID:&tmp_num}
+	comment5 := Test_GORM_Comment{Content:"Hello World6", UserID:"789101", Mint:"0x1"}
+	comment6 := Test_GORM_Comment{Content:"Hello World7", UserID:"112131", Mint:"0x1"		, ParentID:&tmp_num2}
+	comment7 := Test_GORM_Comment{Content:"Hello World8", UserID:"123456", Mint:"0x1"}
+	comment8 := Test_GORM_Comment{Content:"Hello World9", UserID:"789101", Mint:"0x1"}
+	comment9 := Test_GORM_Comment{Content:"Hello World10", UserID:"112131", Mint:"0x1"		, ParentID:&tmp_num3}
 
 	gorm_manager.Gorm_Create(&comment)	
 	gorm_manager.Gorm_Create(&comment1)
@@ -119,20 +119,20 @@ func Example_2_Gorm(){
 
 	public.DBG_LOG("query")
 
-	var comment_of_mint []Comment
-	gorm_manager.Gorm_Fetch_Where(&comment_of_mint, &Comment{Mint:"0x1"})
+	var comment_of_mint []Test_GORM_Comment
+	gorm_manager.Gorm_Fetch_Where(&comment_of_mint, &Test_GORM_Comment{Mint:"0x1"})
 	public.DBG_LOG(comment_of_mint)
 
-	var comment_of_user User
-	gorm_manager.Gorm_Foreign_Where(&comment_of_user, &User{Name:"Dunty"}, []string{"Comments"})
+	var comment_of_user Test_GORM_User
+	gorm_manager.Gorm_Foreign_Where(&comment_of_user, &Test_GORM_User{Name:"Dunty"}, []string{"Comments"})
 	public.DBG_LOG(comment_of_user)
 
-	var foregin_use User
+	var foregin_use Test_GORM_User
 	gorm_manager.Gorm_Foreign(&foregin_use, "789101", "Comments")
 	public.DBG_LOG(foregin_use)
 
-	var comment_and_sub_comment_of_mint []Comment
-	gorm_manager.Gorm_Foreign_Where(&comment_and_sub_comment_of_mint, &Comment{Mint:"0x1"}, []string{"Replies"})
+	var comment_and_sub_comment_of_mint []Test_GORM_Comment
+	gorm_manager.Gorm_Foreign_Where(&comment_and_sub_comment_of_mint, &Test_GORM_Comment{Mint:"0x1"}, []string{"Replies"})
 	public.DBG_LOG(comment_and_sub_comment_of_mint)
 }
 

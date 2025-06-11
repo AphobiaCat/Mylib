@@ -6,7 +6,6 @@ import (
     //"gorm.io/gorm/logger"
 
     "mylib/src/public"
-    "mylib/src/module/app"
 )
 
 var gorm_manager Gorm_Manager
@@ -140,7 +139,7 @@ func (gm *Gorm_Manager) SQL_Query(fetched_data interface{}, query string, datas 
 //------------------------------API---------------------------------
 
 func Init_Gorm(v ...interface{}){
-	dsn, exist := app.Global[string]("dsn")
+	dsn, exist := public.Global[string]("dsn")
 	
 	if exist{
 		gorm_manager.Init(dsn, v...)
@@ -191,25 +190,10 @@ func Gorm_SQL_Query(fetched_data interface{}, query string, datas ...interface{}
 
 func init(){
 
-	database_global		:= true
-
-	database_name, e	:= app.Global[string]("database_name")
-	database_global		= database_global && e
-	database_user, e	:= app.Global[string]("database_user")
-	database_global		= database_global && e
-	database_passwd, e	:= app.Global[string]("database_passwd")
-	database_global		= database_global && e
-	database_ip, e		:= app.Global[string]("database_ip")
-	database_global		= database_global && e
-
-	if !database_global{
-		panic("database no init")
-	}
-
-	dsn := database_user + ":" + database_passwd + "@tcp(" + database_ip + ")/" + database_name + "?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := public.Config.Database.User + ":" + public.Config.Database.Password + "@tcp(" + public.Config.Database.Ip + ")/" + public.Config.Database.Name + "?charset=utf8mb4&parseTime=True&loc=Local"
 
 	//public.DBG_LOG("database dsn:", dsn)
 
-	app.Set_Global("dsn", dsn)
+	public.Set_Global("dsn", dsn)
 }
 

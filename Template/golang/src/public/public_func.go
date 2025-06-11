@@ -57,6 +57,9 @@ func DBG_LOG_VAR(v interface{}){
 
 func DBG_LOG(v ...interface{}) {
 
+	if Config.Mode != "pre"{
+		return
+	}
 	
 	pc, file, line, ok := runtime.Caller(1)
 	if !ok {

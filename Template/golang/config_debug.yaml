@@ -1,0 +1,14 @@
+version: 1.0
+mode: pre
+
+database:
+  name: test
+  user: Dunty
+  password: 123123Dunty
+  ip: 192.168.136.130:3306
+
+redis:
+  ip: 192.168.136.130:6379
+  password: 123123Dunty
+  DB: 2
+  enable_tls: false
