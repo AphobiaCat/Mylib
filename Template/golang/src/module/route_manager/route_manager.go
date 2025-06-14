@@ -8,7 +8,7 @@ import (
 
 	"mylib/src/public"
 
-	cache "mylib/src/module/cachesql_manager"
+	redis "mylib/src/module/redis_manager"
 )
 
 
@@ -36,51 +36,22 @@ var allow_origins = []string{"*"}
 var allow_methods = []string{"*"} //[]string{"GET", "POST", "PUT", "DELETE"} 
 var allow_headers = []string{"*"}
 
-const stream_restart_time 	int64 = 60
-const stream_restart_time_2	int64 = stream_restart_time * 2
-
 const mid_data_key = "MidData"
-
-type Stream_Control_Struct struct{
-	C	int	`json:"c"`
-}
 
 func stream_control(api string, ip string, call_per_minute_rate int)bool{
 
 	if call_per_minute_rate == 0{
 		return true
 	}
-	
-	public.DBG_LOG(api, " request:", ip)
 
-	redis_restart	:= "lock_restart_" + api + "_" + ip
-	redis_now		:= "lock_now_" + api + "_" + ip
+	// public.DBG_LOG(api, " request:", ip)
 
-	ret := cache.Get_Cache(redis_restart, func()interface{}{
-		return 1
-	}, stream_restart_time_2, stream_restart_time_2, stream_restart_time)
+	redis_key	:= "stream_control_" + api + "_" + ip
+	count := redis.Timer_Count(redis_key, int64(call_per_minute_rate), 60)
 
-	if ret == "1"{
-		cache.Set_Cache(redis_restart, 0, stream_restart_time)
-		cache.Set_Cache(redis_now, Stream_Control_Struct{C: call_per_minute_rate}, stream_restart_time)
-	}
-
-	ret = cache.Get_Cache(redis_now, func()interface{}{
-		return Stream_Control_Struct{C: 0}
-	}, stream_restart_time_2, stream_restart_time_2, stream_restart_time)
-
-	var now Stream_Control_Struct
-
-	public.Parser_Json(ret, &now)
-
-	public.DBG_LOG("--->:", now)
-	
-	if now.C > 0 {
-		now.C -= 1
-		cache.Set_Cache(redis_now, now, stream_restart_time)
+	if count >= 0{
 		return true
 	}else{
-		public.DBG_ERR("ip[", ip, "] request to much")
 		return false
 	}
 }
@@ -134,6 +105,7 @@ func (rm *Route_Manager) Post(api_path string, processer_infos ...interface{}){
 	var post_err_msg			string
 	var post_count_per_min		int
 
+	var need_ip bool
 
 	mids_index := -1
 	mids := []mid_array{}
@@ -175,6 +147,9 @@ func (rm *Route_Manager) Post(api_path string, processer_infos ...interface{}){
 			case int:
 				post_count_per_min = val.(int)
 
+			case bool:
+				need_ip = val.(bool)
+
 			default:
 				public.DBG_ERR("err info:", val)
 		}
@@ -210,18 +185,30 @@ func (rm *Route_Manager) Post(api_path string, processer_infos ...interface{}){
 			public.DBG_ERR("input data no exist:", body)
 		}
 
+		body_str := string(body)
+
+		if need_ip {
+			var tmp_map map[string]interface{}
+
+			public.Parser_Json(body_str, &tmp_map)
+
+			tmp_map["ip"] = clientIP
+
+			body_str = public.Build_Json(tmp_map)
+		}
+
 		var ret interface{}
 		var succ bool
 
-		if post_process != nil{
-			ret, succ = post_process(string(body))
-		}else{
+		if post_process != nil {
+			ret, succ = post_process(body_str)
+		} else {
 			mid_params, exist := context.Get(mid_data_key)
 
-			if exist{
-				ret, succ = post_process_recv_mid(string(body), mid_params.(map[string]string))
-			}else{
-				ret, succ = post_process_recv_mid(string(body))
+			if exist {
+				ret, succ = post_process_recv_mid(body_str, mid_params.(map[string]string))
+			} else {
+				ret, succ = post_process_recv_mid(body_str)
 			}
 		}
 			
@@ -268,6 +255,8 @@ func (rm *Route_Manager) Get(api_path string, processer_infos ...interface{}){
 	var get_err_msg 			string
 	var get_count_per_min		int
 
+	var need_ip bool
+
 	mids_index := -1
 	mids := []mid_array{}
 	
@@ -306,7 +295,10 @@ func (rm *Route_Manager) Get(api_path string, processer_infos ...interface{}){
 				}
 
 			case int:
-				get_count_per_min	= val.(int)
+				get_count_per_min = val.(int)
+
+			case bool:
+				need_ip = val.(bool)
 
 			default:
 				public.DBG_ERR("err info:", val)
@@ -345,6 +337,10 @@ func (rm *Route_Manager) Get(api_path string, processer_infos ...interface{}){
 			} else {
 				public.DBG_ERR("key[", key_val, "] no exist")
 			}
+		}
+
+		if need_ip {
+			params["ip"] = clientIP
 		}
 
 		var ret interface{}
@@ -437,3 +433,4 @@ func Route_Get(api_path string, processer_infos ...interface{}){
 func Init_Route(bind_addr string){
 	route_manager.Init(bind_addr)
 }
+

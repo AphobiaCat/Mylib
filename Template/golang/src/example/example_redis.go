@@ -42,8 +42,7 @@ func test1(){
 	}
 }
 
-func Example_Redis_Manager(){
-
+func example_redis_test1(){
 	var value Test_Redis_Data
 	value.Data 		= 0
 	value.OtherData	= "hello wolrd"
@@ -58,8 +57,24 @@ func Example_Redis_Manager(){
 
 	time.Sleep(10 * time.Second)
 
-	redis_manager.Close_Redis()
-	public.DBG_LOG("close");
+	public.DBG_LOG("example_redis_test1 close");
+}
+
+
+func example_redis_test2(){
+
+	for i := 0; i < 120; i++{
+		count := redis_manager.Timer_Count("test_redis_timer_count", 60, 5)
+		public.DBG_LOG("timer count[", count, "]")
+		public.Sleep(200)
+	}
+}
+
+func Example_Redis_Manager(){
+	example_redis_test1()
+	example_redis_test2()
+
+	//redis_manager.Close_Redis()
 }
 
 

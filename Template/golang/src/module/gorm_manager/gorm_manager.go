@@ -1,9 +1,14 @@
 package gorm_manager
 
 import (
-    "gorm.io/driver/mysql"
-    "gorm.io/gorm"
-    //"gorm.io/gorm/logger"
+	"log"
+	"os"
+	"time"
+
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+
 
     "mylib/src/public"
 )
@@ -23,14 +28,23 @@ func (gm *Gorm_Manager) Init(dsn string, models ...interface{}){
 	var err error
 
 	//	connect
-    gm.db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
-		 //Logger: logger.Default.LogMode(logger.Silent),
-    })
-    if err != nil {
-        panic("failed to connect database")
-    }
-
-    // aoto migrate, according struct create/update tables
+	gm.db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
+		Logger: logger.New(
+			log.New(os.Stdout, "\r\n", log.LstdFlags),
+			logger.Config{
+				SlowThreshold:             time.Second, // Slow SQL threshold
+				LogLevel:                  logger.Warn, // Log level
+				IgnoreRecordNotFoundError: true,        // Ignore ErrRecordNotFound error for logger
+				ParameterizedQueries:      false,       // Don't include params in the SQL log
+				Colorful:                  true,        // Enable color
+			},
+		),
+	})
+	if err != nil {
+		panic("failed to connect database")
+	}
+	// gm.db = gm.db.Debug()
+	// aoto migrate, according struct create/update tables
 
 	//gm.db.Migrator().DropTable(models...)	//for test
 
@@ -135,6 +149,13 @@ func (gm *Gorm_Manager) SQL_Query(fetched_data interface{}, query string, datas 
 	return result.Error
 }
 
+func (gm *Gorm_Manager) Exec(sql string, args ...interface{}) error {
+	result := gm.db.Exec(sql, args...)
+	if result.Error != nil {
+		public.DBG_ERR("ExecRaw Error:", result.Error)
+	}
+	return result.Error
+}
 
 //------------------------------API---------------------------------
 
@@ -186,6 +207,14 @@ func Gorm_Delete(data interface{}) error{
 
 func Gorm_SQL_Query(fetched_data interface{}, query string, datas ...interface{}) error{
 	return gorm_manager.SQL_Query(fetched_data, query, datas...)
+}
+
+func Gorm_SQL_Exec(sql string, args ...interface{}) error {
+	return gorm_manager.Exec(sql, args...)
+}
+
+func Get_DB() *gorm.DB {
+	return gorm_manager.db
 }
 
 func init(){
