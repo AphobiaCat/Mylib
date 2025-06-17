@@ -168,6 +168,16 @@ func (rm *Redis_Manager) Stack_Get(redis_key string)(string, bool){
 	return task, true
 }
 
+func (rm *Redis_Manager) List_Range(redis_key string, start_pos int64, end_pos int64)([]string, bool){
+	values, err := rm.rdb.LRange(rm.ctx, redis_key, start_pos, end_pos).Result()
+    if err != nil {
+    	public.DBG_ERR("redis list range err:", err)
+        return values, false
+    }
+
+    return values, true
+}
+
 func (rm *Redis_Manager) Timer_Count(redis_key string, reload_count int64, reset_time_s int64)(int64){
 	ok, err := rm.rdb.SetNX(rm.ctx, redis_key, reload_count - 1, time.Duration(reset_time_s * 1000 * 1000 * 1000)).Result()
     if err != nil {
@@ -190,7 +200,7 @@ func (rm *Redis_Manager) Timer_Count(redis_key string, reload_count int64, reset
         // count done
         return -1
     }
-    
+
     return count
 }
 
@@ -233,6 +243,10 @@ func Stack_Set(redis_key string, data interface{}){
 
 func Stack_Get(redis_key string)(string, bool){
 	return redis_manager.Stack_Get(redis_key)
+}
+
+func List_Range(redis_key string, start_pos int64, end_pos int64)([]string, bool){
+	return redis_manager.List_Range(redis_key, start_pos, end_pos)
 }
 
 func Timer_Count(redis_key string, reload_count int64, reset_time int64)(int64){
