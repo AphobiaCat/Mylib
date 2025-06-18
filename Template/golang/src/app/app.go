@@ -2,7 +2,7 @@ package main
 
 import (
 	"mylib/src/public"
-	"mylib/src/example"
+	//"mylib/src/example"
 )
 
 
@@ -14,11 +14,11 @@ import (
 func APP_Entry() {	
 
 	//example.Example_app()
-	example.Example_Redis_Manager()
+	//example.Example_Redis_Manager()
 	//example.Example_Json_Op()
 	//example.Example_Timer_Manager()
 	//example.Example_2_Gorm()
-	example.Example_Route()
+	//example.Example_Route()
 	//example.Example_Cachesql()
 	//example.Example_HTTP()
 	//example.Example_HTTP2()
