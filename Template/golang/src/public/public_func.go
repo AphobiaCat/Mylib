@@ -19,6 +19,16 @@ func Now_Time_MS() int64{
     return ms
 }
 
+func Now_Time_US() int64{
+	us := time.Now().UnixMicro()
+    return us
+}
+
+func Now_Time_NS() int64{
+	ns := time.Now().UnixNano()
+    return ns
+}
+
 func Sleep(sleep_ms int){
 	time.Sleep(time.Duration(sleep_ms) * time.Millisecond)
 }
@@ -305,6 +315,19 @@ func RevertUint32ToStr(num_array []uint32) string {
 	}
 	
 	return ret
+}
+
+func ConvertInt64ToStr(num int64)string{
+	ret_str := ""
+
+	for num != 0 {
+	
+		ret_str += string(rune(num % 10 + '0'))
+
+		num /= 10
+	}
+
+	return ReverseStr(ret_str)
 }
 
 func ReverseStr(str string) string {
