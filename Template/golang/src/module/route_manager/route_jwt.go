@@ -8,7 +8,7 @@ import(
 	"time"
 )
 
-var jwtKey = []byte("my_secret_key")
+var jwtKey = []byte(public.Config.JwtKey)
 
 func Route_Generate_Jwt_By_Str(data string, expiration_time_s_option ...int)(string, bool){
 	expiration_time := 60 * 60

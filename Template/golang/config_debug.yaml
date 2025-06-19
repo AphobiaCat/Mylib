@@ -1,6 +1,8 @@
 version: 1.0
 mode: pre
 
+jwt_key: my_secret_key
+
 database:
   name: test
   user: Dunty

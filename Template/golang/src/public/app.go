@@ -9,6 +9,7 @@ import(
 type APP_Config struct {
 	Version			string	`yaml:"version"`
 	Mode			string	`yaml:"mode"`
+	JwtKey			string	`yaml:"jwt_key"`
 	Database struct {
 		Name		string	`yaml:"name"`
 		User		string	`yaml:"user"`
