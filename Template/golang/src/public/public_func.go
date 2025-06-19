@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"time"
+	"strconv"
 )
 
 func Now_Time_S() int64{
@@ -133,71 +134,6 @@ func SplitStrAfterChar(str string, cutAfter rune) (string, string) {
 	return str, ""
 }
 
-func ConvertHEXStrToUint32(num string) uint32 {
-
-	var ret uint32 = 0
-
-	if len(num) > 8 {
-		return ret
-	}
-
-	for _, data := range num {
-
-		ret <<= 4
-
-		var tmpNum uint8 = 0
-		if data >= '0' && data <= '9' {
-			tmpNum = uint8(data - '0')
-		} else if data >= 'a' && data <= 'f' {
-			tmpNum = uint8(data - 'a' + 10)
-		} else if data >= 'A' && data <= 'F' {
-			tmpNum = uint8(data - 'A' + 10)
-		}
-
-		ret += uint32(tmpNum)
-	}
-	return ret
-}
-
-func ConvertUint32StrToUint32(num string) uint32 {
-	var ret uint32 = 0
-
-	//DBG_LOG("convert num[", num, "]")
-	
-	for _, data := range num {
-		ret *= 10
-		ret += uint32(data - '0')
-	}
-	
-	return ret
-}
-
-func ConvertHEXStrToInt(num string) int {
-
-	var ret int = 0
-
-	if len(num) > 8 {
-		return ret
-	}
-
-	for _, data := range num {
-
-		ret <<= 4
-
-		var tmpNum uint8 = 0
-		if data >= '0' && data <= '9' {
-			tmpNum = uint8(data - '0')
-		} else if data >= 'a' && data <= 'f' {
-			tmpNum = uint8(data - 'a' + 10)
-		} else if data >= 'A' && data <= 'F' {
-			tmpNum = uint8(data - 'A' + 10)
-		}
-
-		ret += int(tmpNum)
-	}
-	return ret
-}
-
 func ConvertToString(v interface{}) string {
 	return fmt.Sprintf("%v", v)
 }
@@ -317,58 +253,23 @@ func RevertUint32ToStr(num_array []uint32) string {
 	return ret
 }
 
-func ConvertInt64ToStr(num int64)string{
-	ret_str := ""
-
-	for num != 0 {
-	
-		ret_str += string(rune(num % 10 + '0'))
-
-		num /= 10
-	}
-
-	return ReverseStr(ret_str)
+func ConvertNumToStr(num int64)string{
+	return strconv.FormatInt(num, 10)
 }
 
-func ReverseStr(str string) string {
-	var ret string = "0x"
+func ConvertNumToHexStr(num int64)string{
+	return "0x" + strconv.FormatInt(num, 16)
+}
 
-	for i := len(str) - 1; i >= 0; i-- {
-		ret += string(str[i])
-	}
-
+func ConvertStrToNum(num string) int64 {
+	ret, _ := strconv.ParseInt(num, 10, 64)
 	return ret
 }
 
-func ConvertUint32ToHexString(num uint32) string {
-	ret_str := ""
-
-	for num != 0 {
-		tmp_num := num & 0xF
-
-		if tmp_num >= 0 && tmp_num <= 9 {
-			ret_str += string(rune(tmp_num + '0'))
-		} else {
-			ret_str += string(rune(tmp_num + 'A' - 10))
-		}
-
-		num >>= 4
-	}
-
-	return ReverseStr(ret_str)
-}
-
-func ConvertIntStrToInt(num string) int {
-
-	var ret int = 0
-	
-	for _, data := range num {
-		ret *= 10
-		ret += int(int(data - '0'))
-	}
+func ConvertHEXStrToNum(num string) int64 {
+	ret, _ := strconv.ParseInt(num, 16, 64)
 	return ret
 }
-
 
 func next_str(T string) []int{
 	next := make([]int, len(T) + 1)
