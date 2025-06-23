@@ -1,8 +1,8 @@
 module mylib
 
-go 1.22
+go 1.23.0
 
-toolchain go1.22.6
+toolchain go1.23.10
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
@@ -48,6 +48,7 @@ require (
 	golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842 // indirect
 	golang.org/x/mod v0.18.0 // indirect
 	golang.org/x/net v0.33.0 // indirect
+	golang.org/x/oauth2 v0.30.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect

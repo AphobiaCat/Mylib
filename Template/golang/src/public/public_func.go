@@ -267,6 +267,11 @@ func ConvertStrToNum(num string) int64 {
 }
 
 func ConvertHEXStrToNum(num string) int64 {
+
+	if len(num) > 2 && num[0:2] == "0x" {
+		num = num[2:]
+	}
+
 	ret, _ := strconv.ParseInt(num, 16, 64)
 	return ret
 }

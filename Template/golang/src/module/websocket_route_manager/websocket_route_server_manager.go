@@ -121,7 +121,7 @@ func ws_route_handler(w http.ResponseWriter, r *http.Request){
 
 		header_len_str	:= origin_msg[0:4]
 
-		header_len	:= public.ConvertHEXStrToUint32(header_len_str)
+		header_len	:= uint32(public.ConvertHEXStrToNum(header_len_str))
 		header		:= origin_msg[4:(4 + header_len)]
 
 		public.DBG_LOG("len[", header_len, "] header[", header, "]")
@@ -253,7 +253,7 @@ func build_ret_msg(code int, user_route string, data interface{}, big_payload_op
 
 	ret_str := public.Build_Json(ret_s)
 
-	ret_str_len := public.ConvertUint32ToHexString(uint32(len(ret_str)))[2:]
+	ret_str_len := public.ConvertNumToHexStr(int64(len(ret_str)))[2:]
 	
 	if len(ret_str_len) != 4{
 		fill_zero := "0000"

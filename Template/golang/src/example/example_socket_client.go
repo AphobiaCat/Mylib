@@ -10,12 +10,12 @@ func Example_tcp_socket_client(){
 
 	recv_msg, send_msg := socket_manager.Socket_Init_TCP_Client("127.0.0.1:8080", 1000)
 
-	i := uint32(1)
+	i := int64(1)
 	
 	for {
 
 		public.DBG_LOG("send")
-		send_msg <- ("hello world" + public.ConvertUint32ToHexString(i))
+		send_msg <- ("hello world" + public.ConvertNumToHexStr(i))
 		public.DBG_LOG("recv")
 		recv := <- recv_msg
 	
@@ -30,12 +30,12 @@ func Example_udp_socket_client(){
 
 	recv_msg, send_msg := socket_manager.Socket_Init_UDP_Client("127.0.0.1:8082", 1000)
 
-	i := uint32(1)
+	i := int64(1)
 	
 	for {
 
 		public.DBG_LOG("send")
-		send_msg <- ("hello world" + public.ConvertUint32ToHexString(i))
+		send_msg <- ("hello world" + public.ConvertNumToHexStr(i))
 		public.DBG_LOG("recv")
 		recv := <- recv_msg
 	
@@ -49,12 +49,12 @@ func Example_udp_socket_client(){
 func Example_quic_socket_client(){
 	recv_msg, send_msg := socket_manager.Socket_Init_QUIC_Client("127.0.0.1:8086", 1000, "./src/example/test_socket_credit/ca.pem")
 
-	i := uint32(1)
+	i := int64(1)
 	
 	for {
 
 		public.DBG_LOG("send")
-		send_msg <- ("hello world" + public.ConvertUint32ToHexString(i))
+		send_msg <- ("hello world" + public.ConvertNumToHexStr(i))
 		public.DBG_LOG("recv")
 		recv := <- recv_msg
 	
