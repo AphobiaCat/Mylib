@@ -127,6 +127,13 @@ func (rm *Redis_Manager) Borrow_Value(value_key string) interface{}{
 	return ret_val
 }
 
+func (rm *Redis_Manager) LPUSH(redis_key string, data string){
+	err := rm.rdb.LPush(rm.ctx, redis_key, data).Err()
+
+	if err != nil{
+		public.DBG_ERR("queue set value failed", err)
+	}
+}
 
 func (rm *Redis_Manager) Queue_Set(redis_key string, data interface{}){
 	err := rm.rdb.LPush(rm.ctx, redis_key, public.Build_Json(data)).Err()
@@ -198,6 +205,11 @@ func (rm *Redis_Manager) Timer_Count(redis_key string, reload_count int64, reset
 
     if count < 0 {
         // count done
+        ttl, err := rm.rdb.TTL(rm.ctx, redis_key).Result()
+	    if err == nil && ttl < 0 {
+	        rm.rdb.Del(rm.ctx, redis_key)
+	        return reload_count
+	    }
         return -1
     }
 
@@ -227,6 +239,10 @@ func Get_Value(value_key string) interface{}{
 
 func Borrow_Value(value_key string) interface{}{
 	return redis_manager.Borrow_Value(value_key)
+}
+
+func LPUSH(redis_key string, data string){
+	redis_manager.LPUSH(redis_key, data)
 }
 
 func Queue_Set(redis_key string, data interface{}){
