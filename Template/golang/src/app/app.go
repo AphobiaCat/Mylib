@@ -2,7 +2,7 @@ package main
 
 import (
 	"mylib/src/public"
-	//"mylib/src/example"
+	"mylib/src/example"
 )
 
 
@@ -30,7 +30,7 @@ func APP_Entry() {
 	//example.Example_socket_server()
 	//example.Example_socket_client()
 	//example.Example_thread_map()
-	//example.Example_OAuth2()
+	example.Example_OAuth2()
 	
 	for {
 		
