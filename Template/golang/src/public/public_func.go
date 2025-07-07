@@ -2,39 +2,40 @@ package public
 
 import (
 	"fmt"
-	"runtime"
 	"path/filepath"
 	"reflect"
-	"time"
+	"runtime"
 	"strconv"
+	"strings"
+	"time"
 )
 
-func Now_Time_S() int64{
-	now		:= time.Now()
-    seconds	:= now.Unix()
-    return seconds
+func Now_Time_S() int64 {
+	now := time.Now()
+	seconds := now.Unix()
+	return seconds
 }
 
-func Now_Time_MS() int64{
+func Now_Time_MS() int64 {
 	ms := time.Now().UnixMilli()
-    return ms
+	return ms
 }
 
-func Now_Time_US() int64{
+func Now_Time_US() int64 {
 	us := time.Now().UnixMicro()
-    return us
+	return us
 }
 
-func Now_Time_NS() int64{
+func Now_Time_NS() int64 {
 	ns := time.Now().UnixNano()
-    return ns
+	return ns
 }
 
-func Sleep(sleep_ms int){
+func Sleep(sleep_ms int) {
 	time.Sleep(time.Duration(sleep_ms) * time.Millisecond)
 }
 
-func DBG_LOG_VAR(v interface{}){
+func DBG_LOG_VAR(v interface{}) {
 
 	pc, file, line, ok := runtime.Caller(1)
 	if !ok {
@@ -47,31 +48,31 @@ func DBG_LOG_VAR(v interface{}){
 		fmt.Println("Failed to get function information")
 		return
 	}
-	
+
 	path := file
-    filename := filepath.Base(path)
-	
+	filename := filepath.Base(path)
+
 	var outputStr string = "[info] file[" + filename + "]\t| func[" + fn.Name() + "]\t| line[" + ConvertToString(line) + "]\t| arg:"
 
 	typ := reflect.TypeOf(v)
 
-    outputStr += ConvertToString(typ)
+	outputStr += ConvertToString(typ)
 
-    for i := 0; i < typ.NumMethod(); i++ {
-        method := typ.Method(i)
+	for i := 0; i < typ.NumMethod(); i++ {
+		method := typ.Method(i)
 		outputStr += "\nmethod[" + ConvertToString(method.Name) + "] \t\t\t method type[" + ConvertToString(method.Type) + "]"
 
-    }
+	}
 
 	fmt.Println(outputStr)
 }
 
 func DBG_LOG(v ...interface{}) {
 
-	if Config.Mode != "pre"{
+	if Config.Mode != "pre" {
 		return
 	}
-	
+
 	pc, file, line, ok := runtime.Caller(1)
 	if !ok {
 		fmt.Println("Failed to get caller information")
@@ -83,10 +84,10 @@ func DBG_LOG(v ...interface{}) {
 		fmt.Println("Failed to get function information")
 		return
 	}
-	
+
 	path := file
-    filename := filepath.Base(path)
-	
+	filename := filepath.Base(path)
+
 	var outputStr string = "[info] file[" + filename + "]\t| func[" + fn.Name() + "]\t| line[" + ConvertToString(line) + "]\t| log:"
 
 	for _, val := range v {
@@ -94,7 +95,7 @@ func DBG_LOG(v ...interface{}) {
 	}
 
 	fmt.Println(outputStr)
-	
+
 }
 
 func DBG_ERR(v ...interface{}) {
@@ -110,10 +111,10 @@ func DBG_ERR(v ...interface{}) {
 		fmt.Println("Failed to get function information")
 		return
 	}
-	
+
 	path := file
-    filename := filepath.Base(path)
-	
+	filename := filepath.Base(path)
+
 	var outputStr string = "[error] file[" + filename + "]\t| func[" + fn.Name() + "]\t| line[" + ConvertToString(line) + "]\t| log:"
 
 	for _, val := range v {
@@ -225,39 +226,38 @@ func HexStrMsgToUint32Array(msg string) (int, []uint32) {
 	return ret_len, ret
 }
 
-
 func RevertUint32ToStr(num_array []uint32) string {
 
 	ret := ""
 
 	for _, val := range num_array {
-	
+
 		u1 := uint8(val >> 24)
 		u2 := uint8((val >> 16) & 0xFF)
 		u3 := uint8((val >> 8) & 0xFF)
 		u4 := uint8(val & 0xFF)
 
-		if u1 == 0{
+		if u1 == 0 {
 			break
-		}else if u2 == 0{
+		} else if u2 == 0 {
 			ret += string(u1)
-		}else if u3 == 0{
+		} else if u3 == 0 {
 			ret += string(u1) + string(u2)
-		}else if u4 == 0{
+		} else if u4 == 0 {
 			ret += string(u1) + string(u2) + string(u3)
-		}else{
+		} else {
 			ret += string(u1) + string(u2) + string(u3) + string(u4)
 		}
 	}
-	
+
 	return ret
 }
 
-func ConvertNumToStr(num int64)string{
+func ConvertNumToStr(num int64) string {
 	return strconv.FormatInt(num, 10)
 }
 
-func ConvertNumToHexStr(num int64)string{
+func ConvertNumToHexStr(num int64) string {
 	return "0x" + strconv.FormatInt(num, 16)
 }
 
@@ -276,49 +276,51 @@ func ConvertHEXStrToNum(num string) int64 {
 	return ret
 }
 
-func next_str(T string) []int{
-	next := make([]int, len(T) + 1)
+func next_str(T string) []int {
+	next := make([]int, len(T)+1)
 
 	i := 1
 	j := 0
 
-	for ; i < len(T); {
+	for i < len(T) {
 
-		if j == 0 || T[i - 1] == T[j - 1]{
+		if j == 0 || T[i-1] == T[j-1] {
 			i++
 			j++
-			next[i] = j;
-			
-		}else{
-			j = next[j];
+			next[i] = j
+
+		} else {
+			j = next[j]
 		}
 	}
 
 	return next
 }
 
-func Include_Str(S string, T string) int{
-    next := next_str(T);
+func Include_Str(S string, T string) int {
+	next := next_str(T)
 
 	i := 1
 	j := 1
 
-	for ; i <= len(S) && j <= len(T); {
+	for i <= len(S) && j <= len(T) {
 
-		if j == 0 || S[i - 1] == T[j - 1]{
+		if j == 0 || S[i-1] == T[j-1] {
 			i++
 			j++
-		}else{
+		} else {
 			j = next[j]
 		}
-	} 
+	}
 
-	if j > len(T){
+	if j > len(T) {
 		return i - len(T)
 	}
 
 	return -1
 }
 
-
-
+func Split(str string, split_by string) []string {
+	parts := strings.Split(str, split_by)
+	return parts
+}
