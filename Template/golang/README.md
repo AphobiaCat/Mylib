@@ -23,3 +23,5 @@ change config in
 
 Import the required modules from src/module/  
 and modify your code in src/app/app.go  
+
+Wanna more config.yaml support. change src/public/app.go.
