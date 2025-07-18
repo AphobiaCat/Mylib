@@ -31,7 +31,8 @@ func APP_Entry() {
 	//example.Example_socket_client()
 	//example.Example_thread_map()
 	//example.Example_OAuth2()
-	example.Example_Exec()
+	//example.Example_Exec()
+	example.Example_msg_queue()
 	
 	for {
 		

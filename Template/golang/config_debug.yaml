@@ -14,3 +14,13 @@ redis:
   password: 123123Dunty
   DB: 2
   enable_tls: false
+
+nsq:
+  nsqd_ip: 127.0.0.1:4150
+  nsqlookupd_ip: 192.168.136.128:4161
+  max_retry: 3
+  retry_time: 1000
+  # Set error_redis_key to null, if no need to save error msg.
+  error_redis_key: nsq_error
+  # Set error_save_time to 0 to permanently store the error message.
+  error_save_time: 86400

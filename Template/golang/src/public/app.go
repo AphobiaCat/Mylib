@@ -7,21 +7,30 @@ import(
 )
 
 type APP_Config struct {
-	Version			string	`yaml:"version"`
-	Mode			string	`yaml:"mode"`
-	JwtKey			string	`yaml:"jwt_key"`
+	Version				string	`yaml:"version"`
+	Mode				string	`yaml:"mode"`
+	JwtKey				string	`yaml:"jwt_key"`
 	Database struct {
-		Name		string	`yaml:"name"`
-		User		string	`yaml:"user"`
-		Password	string	`yaml:"password"`
-		Ip			string	`yaml:"ip"`
+		Name			string	`yaml:"name"`
+		User			string	`yaml:"user"`
+		Password		string	`yaml:"password"`
+		Ip				string	`yaml:"ip"`
 	}	`yaml:"database"`
 	Redis	struct{
-		Ip			string	`yaml:"ip"`
-		Password	string	`yaml:"password"`
-		DB			int		`yaml:"db"`
-		EnableTls	bool	`yaml:"enable_tls"`
+		Ip				string	`yaml:"ip"`
+		Password		string	`yaml:"password"`
+		DB				int		`yaml:"db"`
+		EnableTls		bool	`yaml:"enable_tls"`
 	}	`yaml:"redis"`
+
+	Nsq	struct{
+		NsqdIp			string	`yaml:"nsqd_ip"`
+		NsqlookupdIp	string	`yaml:"nsqlookupd_ip"`
+		MaxRetry		int		`yaml:"max_retry"`
+		RetryTime		int		`yaml:"retry_time"`
+		ErrorRedisKey	string	`yaml:"error_redis_key"`
+		ErrorSaveTime	int		`yaml:"error_save_time"`
+	}	`yaml:"nsq"`
 }
 
 var Config APP_Config
