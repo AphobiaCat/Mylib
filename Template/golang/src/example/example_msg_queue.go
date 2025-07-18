@@ -23,12 +23,14 @@ func example_producer(){
 }
 
 func example_consumer(){
-	stop1, succ1 := mq.New_Msg_Queue_Consumer("hello", "ch_1", func(recv string){
+	stop1, succ1 := mq.New_Msg_Queue_Consumer("hello", "ch_1", func(recv string)bool{
 		public.DBG_LOG("recv msg:", recv)
+		return true
 	})
 
-	stop2, succ2 := mq.New_Msg_Queue_Consumer("hello", "ch_2", func(recv string){
+	stop2, succ2 := mq.New_Msg_Queue_Consumer("hello", "ch_2", func(recv string)bool{
 		public.DBG_LOG("recv msg:", recv)
+		return false
 	})
 
 	if succ1 && succ2{

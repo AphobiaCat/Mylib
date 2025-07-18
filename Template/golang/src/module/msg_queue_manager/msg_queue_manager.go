@@ -4,6 +4,7 @@ import (
 	"mylib/src/public"
 	cache "mylib/src/module/cachesql_manager"
 	"github.com/nsqio/go-nsq"
+	"fmt"
 )
 
 var nsqd_ip			string
@@ -64,7 +65,7 @@ func New_Msg_Queue_Producer(topic string)(new_msg_chan chan string, close_queue 
 	return
 }
 
-func New_Msg_Queue_Consumer(topic string, channel string, call_back func(string))(stop_chan chan bool, succ bool){
+func New_Msg_Queue_Consumer(topic string, channel string, call_back func(string)bool)(stop_chan chan bool, succ bool){
 	config := nsq.NewConfig()
 
 	consumer, err := nsq.NewConsumer(topic, channel, config)
@@ -75,8 +76,15 @@ func New_Msg_Queue_Consumer(topic string, channel string, call_back func(string)
 	// connect to nsqlookupd or nsqd (suggest nsqlookupd first)
 
 	consumer.AddHandler(nsq.HandlerFunc(func(message *nsq.Message) error {
-		call_back(string(message.Body))
-		return nil
+		succ := call_back(string(message.Body))
+
+		if succ{
+			return nil
+		}
+		
+		cache.Set_Cache(redis_key + ":" + topic + ":" + public.ConvertNumToStr(int64(public.Rand_U64())), string(message.Body), int64(error_save_time))	
+		public.DBG_ERR("failed to process msg[", string(message.Body), "]")
+		return fmt.Errorf("failed to process msg.")
 	}))
 	
 	//err = consumer.ConnectToNSQD(nsqd_ip)
