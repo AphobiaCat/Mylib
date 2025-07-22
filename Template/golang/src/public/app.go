@@ -45,10 +45,10 @@ func Entry(function string, entry_interface ...interface{}){
 	defer global_map_lock.Unlock()
 	params, exist := global_app_init_params[function]
 
-	if !exist || len(entry_interface) == 0{
-		return
-		
-	}
+	// void params also need call.
+	// if !exist || len(entry_interface) == 0{
+	//	return	
+	//}
 
 	for _, entry := range entry_interface{
 		switch entry.(type){
