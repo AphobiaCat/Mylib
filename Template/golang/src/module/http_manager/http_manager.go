@@ -107,20 +107,26 @@ func Get(base_url string, params... map[string]string) string{
 	return string(body)
 }
 
-func Set_Default_Headers(header_map map[string]string){
+func Set_Default_Headers(header_map map[string]string, keep_old ...bool)(old_config map[string]string){
 	if !default_headers_have_init{
 		default_headers = make(map[string]string)
 	}
 
 	//clear(default_headers) go 1.21 or later
 
-	for key, _ := range default_headers{
-		delete(default_headers, key)
+	old_config = default_headers
+
+	if len(keep_old) == 0{
+		for key, _ := range default_headers{
+			delete(default_headers, key)
+		}
 	}
 
 	for key, val := range header_map{
 		default_headers[key] = val
 	}
+
+	return old_config
 }
 
 func Set_Default_Timeout(timeout_sec int){
@@ -129,5 +135,11 @@ func Set_Default_Timeout(timeout_sec int){
 
 func init(){
 	req_timeout = time.Duration(30 * 1000 * 1000 * 1000)
+
+	new_header := make(map[string]string)
+	new_header["Accept"]		= "*/*"
+	new_header["Content-Type"]	= "application/json"
+
+	Set_Default_Headers(new_header)
 }
 

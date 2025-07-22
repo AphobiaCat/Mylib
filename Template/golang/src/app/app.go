@@ -20,7 +20,7 @@ func APP_Entry() {
 	//example.Example_2_Gorm()
 	//example.Example_Route()
 	//example.Example_Cachesql()
-	//example.Example_HTTP()
+	example.Example_HTTP()
 	//example.Example_HTTP2()
 	//example.Example_Webscoketc()
 	//example.Example_Webscokets()
@@ -32,7 +32,7 @@ func APP_Entry() {
 	//example.Example_thread_map()
 	//example.Example_OAuth2()
 	//example.Example_Exec()
-	example.Example_msg_queue()
+	//example.Example_msg_queue()
 	
 	for {
 		
