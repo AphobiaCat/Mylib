@@ -43,7 +43,7 @@ func Entry(function string, entry_interface ...interface{}){
 
 	global_map_lock.Lock()
 	defer global_map_lock.Unlock()
-	params, exist := global_app_init_params[function]
+	params, _ := global_app_init_params[function]
 
 	// void params also need call.
 	// if !exist || len(entry_interface) == 0{
