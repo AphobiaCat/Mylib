@@ -1,4 +1,5 @@
 use serde::Serialize;
+use std::error::Error;
 
 pub struct HttpClient<'a> {
 	url: &'a str,
@@ -47,7 +48,7 @@ impl<'a> HttpClient<'a> {
 		self
 	}
 
-	pub async fn send(self) -> Result<String, String> {
+	pub async fn send(self) -> Result<String, Box<dyn Error>> {
 		if self.is_get{
 			http_get(self.url, &self.headers, &self.params).await
 		}else{
@@ -60,7 +61,7 @@ pub async fn http_get(
 	base_url: &str,
 	headers: &[(&str, &str)],
 	params: &[(&str, &str)],
-) -> Result<String, String> {
+) -> Result<String, Box<dyn Error>> {
 	#[cfg(target_arch = "wasm32")]
 	{
 		use gloo_net::http::Request;
@@ -112,7 +113,7 @@ pub async fn http_post(
 	headers: &[(&str, &str)],
 	params: &[(&str, &str)],
 	body: Option<String>,
-) -> Result<String, String> {
+) -> Result<String, Box<dyn Error>> {
 	#[cfg(target_arch = "wasm32")]
 	{
 		use gloo_net::http::Request;
@@ -136,7 +137,7 @@ pub async fn http_post(
 
 		if let Some(json) = body {
 			req = req.header("Content-Type", "application/json");
-			let res = req.body(json).send().await.map_err(|e| e.to_string())?;
+			let res = req.body(json)?.send().await.map_err(|e| e.to_string())?;
 			let text = res.text().await.map_err(|e| e.to_string())?;
 			Ok(text)
 		} else {
