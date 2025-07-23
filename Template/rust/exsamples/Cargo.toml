@@ -9,4 +9,6 @@ public = { path = "../public" }
 dynamic_code = { path = "../dynamic_code"}
 thread_manager = { path = "../thread_manager"}
 route_websocket_client = { path = "../route_websocket_client"}
+http_manager = { path = "../http_manager" }
 tokio = "1.45.0"
+serde = { version = "1.0.219", features = ["derive"]}

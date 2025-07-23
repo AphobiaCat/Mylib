@@ -4,7 +4,6 @@ use public::DBG_ERR;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::future::Future;
-use std::hash::Hash;
 use std::sync::{Arc, Mutex};
 use tokio::sync::mpsc::{self, Sender};
 use tokio_tungstenite::connect_async;
@@ -193,7 +192,7 @@ impl WsClient {
                 s
             };
 
-            let mut final_msg = hex_len + &json_str + &big_payload;
+            let final_msg = hex_len + &json_str + &big_payload;
 
             (final_msg, locked.tx.clone())
         };

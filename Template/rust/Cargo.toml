@@ -1,6 +1,6 @@
 [workspace]
 members = [ 
-    "dynamic_code", "exsamples",
+    "dynamic_code", "exsamples", "http_manager",
     "main", "main_wasm",
     "public", "route_websocket_client",
     "thread_manager", "wasm_thread_manager", "wasm_websocket_client"]
