@@ -73,22 +73,22 @@ pub struct ThreadManager {
 }
 
 impl ThreadManager {
-    pub fn new(tasks: Vec<Box<dyn FnOnce() + Send>>) -> Self {
-        let mut threads = Vec::new();
 
-        for task in tasks {
-            let handle = thread::spawn(move || {
-                task();
-            });
-            threads.push(handle);
-        }
+    pub fn new() -> Self {
+        ThreadManager { threads: Vec::new() }
+    }
 
-        ThreadManager { threads }
+    pub fn spawn_task<F>(&mut self, task: F)
+    where
+        F: FnOnce() + Send + 'static,
+    {
+        let handle = thread::spawn(task);
+        self.threads.push(handle);
     }
 
     pub fn join(self) {
-        for t in self.threads {
-            t.join().unwrap();
+        for handle in self.threads {
+            handle.join().unwrap();
         }
     }
 }

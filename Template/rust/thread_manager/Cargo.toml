@@ -4,4 +4,12 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+# Native only
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 once_cell = "1.21.3"
+
+# WASM only
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+futures = "0.3.31"
+once_cell = "1.21.3"
+wasm-bindgen-futures = "0.4.50"

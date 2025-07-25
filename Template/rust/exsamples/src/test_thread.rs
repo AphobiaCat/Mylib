@@ -18,12 +18,13 @@ fn task(id: usize) {
 }
 
 pub fn test_thread() {
-    let task_list: Vec<Box<dyn FnOnce() + Send>> = vec![
-        Box::new(|| task(0)),
-        Box::new(|| task(1)),
-    ];
 
-    let manager = ThreadManager::new(task_list);
+
+    let mut manager = ThreadManager::new();
+
+    manager.spawn_task(|| task(0));
+    manager.spawn_task(|| task(1));
+
 
     sleep_ms(1000);
 
