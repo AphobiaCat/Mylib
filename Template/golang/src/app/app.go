@@ -21,7 +21,7 @@ func APP_Entry() {
 	//example.Example_Route()
 	//example.Example_Cachesql()
 	example.Example_HTTP()
-	//example.Example_HTTP2()
+	example.Example_HTTP2()
 	//example.Example_Webscoketc()
 	//example.Example_Webscokets()
 	//example.Example_Ws_Route()

@@ -14,82 +14,95 @@ var default_headers_have_init bool = false
 
 var req_timeout time.Duration
 
-func Post(base_url string, body_data interface{}, header_map... map[string]string) string{
 
-	req, err := http.NewRequest("POST", base_url, public.Build_Net_Json(body_data))
-	if err != nil {
-		public.DBG_ERR("Error creating request:", err)
-		return ""
-	}
-
-	for key, val := range default_headers{
-		req.Header.Set(key, val)
-	}
-
-	if len(header_map) == 1{
-		for key, val := range header_map[0]{
-			req.Header.Set(key, val)
-		}
-	}
-
-	client := &http.Client{
-		Timeout: req_timeout,
-	}
-	resp, err := client.Do(req)
-	if err != nil {
-		public.DBG_ERR("Error making request:", err)
-		return ""
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		public.DBG_ERR("Error reading response:", err)
-		return ""
-	}
-	
-	return string(body)
+type HTTP_Manager struct{
+	url		string
+	headers map[string]string
+	params	url.Values
+	body_s	interface{}
+	timeout	time.Duration
+	is_get	bool
 }
 
-func Get(base_url string, params... map[string]string) string{
-	if len(params) > 2{
-		public.DBG_ERR("one is params, two is headers")
+func Post(base_url string) *HTTP_Manager{
+	ret := &HTTP_Manager{
+		url:     base_url,
+		timeout: req_timeout,
+		is_get:  false,
+		params:  url.Values{},
 	}
 
-	req_params := url.Values{}
+	return ret
+}
 
-	params_headers_flag := 0
-	switch len(params){
-		case 1: //only params
-			params_headers_flag = 1
-		case 2: //params and headers
-			params_headers_flag = 3
+func Get(base_url string) *HTTP_Manager{
+	ret := &HTTP_Manager{
+		url:     base_url,
+		timeout: req_timeout,
+		is_get:  true,
+		params:  url.Values{}, // 同上
+	}
+	return ret
+}
+
+func (hm *HTTP_Manager) Header(key string, val string) *HTTP_Manager{
+	if hm.headers == nil{
+		hm.headers = make(map[string]string)
 	}
 
-	if params_headers_flag & 0x1 == 1{
-		for key, val := range params[0]{
-			req_params.Add(key, val)
-		}
-	}
+	hm.headers[key] = val
+
+	return hm
+}
+
+func (hm *HTTP_Manager) Body(val interface{}) *HTTP_Manager{
+	hm.body_s = val
+
+	return hm
+}
+
+func (hm *HTTP_Manager) Param(key string, val string) *HTTP_Manager{
+	hm.params.Add(key, val)
 	
-	req, err := http.NewRequest("GET", base_url + "?" + req_params.Encode(), nil)
-	if err != nil {
-		public.DBG_ERR("Error creating request:", err)
-		return ""
+	return hm
+}
+
+func (hm *HTTP_Manager) Timeout(timeout_sec int) *HTTP_Manager{
+	hm.timeout = time.Duration(timeout_sec * 1000 * 1000 * 1000)
+
+	return hm
+}
+
+func (hm *HTTP_Manager) Send() string{
+
+	var req *http.Request
+	var err error
+
+	if hm.is_get{
+		req, err = http.NewRequest("GET", hm.url + "?" + hm.params.Encode(), nil)
+		if err != nil {
+			public.DBG_ERR("Error creating request:", err)
+			return ""
+		}
+	}else{
+		req, err = http.NewRequest("POST", hm.url, public.Build_Net_Json(hm.body_s))
+		if err != nil {
+			public.DBG_ERR("Error creating request:", err)
+			return ""
+		}
 	}
 
 	for key, val := range default_headers{
 		req.Header.Set(key, val)
 	}
 
-	if params_headers_flag & 0x2 == 0x2{
-		for key, val := range params[1]{	//usr headers
-			req.Header.Set(key, val)
-		}
+
+	for key, val := range hm.headers{
+		req.Header.Set(key, val)
 	}
 
 	client := &http.Client{
-		Timeout: req_timeout,
+		Timeout: hm.timeout,
 	}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -105,6 +118,7 @@ func Get(base_url string, params... map[string]string) string{
 	}
 	
 	return string(body)
+
 }
 
 func Set_Default_Headers(header_map map[string]string, keep_old ...bool)(old_config map[string]string){
