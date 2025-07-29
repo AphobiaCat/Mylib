@@ -216,6 +216,46 @@ func (rm *Redis_Manager) Timer_Count(redis_key string, reload_count int64, reset
     return count
 }
 
+func (rm *Redis_Manager) Add_Num(redis_key string, num int64, timeout_s ...int64)(int64, bool){
+	values, err := rm.rdb.IncrBy(rm.ctx, redis_key, num).Result()
+    if err != nil {
+    	public.DBG_ERR("redis incr by int err:", err)
+        return values, false
+    }
+
+	if len(timeout_s) > 0{
+		rm.rdb.Expire(rm.ctx, redis_key, time.Duration(timeout_s[0] * 1000 * 1000 * 1000))
+	}
+
+    return values, true
+}
+
+
+func (rm *Redis_Manager) Add_Float_Num(redis_key string, num float64, timeout_s ...int64)(float64, bool){
+	values, err := rm.rdb.IncrByFloat(rm.ctx, redis_key, num).Result()
+    if err != nil {
+    	public.DBG_ERR("redis incr by float err:", err)
+        return values, false
+    }
+
+	if len(timeout_s) > 0{
+		rm.rdb.Expire(rm.ctx, redis_key, time.Duration(timeout_s[0] * 1000 * 1000 * 1000))
+	}
+
+    return values, true
+}
+
+func (rm *Redis_Manager) Get(redis_key string)(string, bool){
+	values, err := rm.rdb.Get(rm.ctx, redis_key).Result()
+    if err != nil {
+    	public.DBG_ERR("get err:", err)
+        return values, false
+    }
+
+    return values, true
+}
+
+
 func (rm *Redis_Manager) Delete(redis_key string){
 	err := rm.rdb.Del(rm.ctx, redis_key)
 	if err != nil {
@@ -267,6 +307,18 @@ func List_Range(redis_key string, start_pos int64, end_pos int64)([]string, bool
 
 func Timer_Count(redis_key string, reload_count int64, reset_time int64)(int64){
 	return redis_manager.Timer_Count(redis_key, reload_count, reset_time)
+}
+
+func Add_Num(key string, num int64, timeout_s ...int64) (int64, bool){
+	return redis_manager.Add_Num(key, num, timeout_s...)
+}
+
+func Add_Float_Num(key string, num float64, timeout_s ...int64) (float64, bool){
+	return redis_manager.Add_Float_Num(key, num, timeout_s...)
+}
+
+func Get(key string)(string, bool) {
+	return redis_manager.Get(key)
 }
 
 func Delete(key string) {
