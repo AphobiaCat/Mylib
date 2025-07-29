@@ -13,18 +13,18 @@ ENTRY=APP_Entry
 all:
 	cp ${APP_MAIN_PATH} ${APP_SRC}
 
-	echo "`sed 's/${ENTRY}/main/g' ${APP_SRC}`" > ${APP_SRC}
+	sed -i 's/!prod/prod/g; s/${ENTRY}/main/g' ${APP_SRC}
 
-	${BUILD_CMD} -o ${TAR} ${APP_SRC} ${ALL_APP_SRC}
+	${BUILD_CMD} -tags=prod -o ${TAR} ./src/app
 
 	rm -f ${APP_SRC}
 
 debug:
 	cp ${APP_MAIN_PATH} ${APP_SRC}
 
-	echo "`sed 's/${ENTRY}/main/g' ${APP_SRC}`" > ${APP_SRC}
+	sed -i 's/!prod/prod/g; s/${ENTRY}/main/g' ${APP_SRC}
 	
-	${BUILD_CMD} -gcflags="all=-N -l" -o ${TAR} ${APP_SRC} ${ALL_APP_SRC}
+	${BUILD_CMD} -gcflags="all=-N -l" -tags=prod -o ${TAR} ./src/app
 
 	rm -f ${APP_SRC}
 

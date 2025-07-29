@@ -1,8 +1,12 @@
+//go:build !prod
+// +build !prod
+
 package main
 
 import (
 	"mylib/src/public"
-	"mylib/src/example"
+	//"mylib/src/example"
+	"mylib/src/app/app_a"
 )
 
 
@@ -18,7 +22,7 @@ func APP_Entry() {
 	//example.Example_Json_Op()
 	//example.Example_Timer_Manager()
 	//example.Example_2_Gorm()
-	example.Example_Route()
+	//example.Example_Route()
 	//example.Example_Cachesql()
 	//example.Example_HTTP()
 	//example.Example_HTTP2()
@@ -33,6 +37,8 @@ func APP_Entry() {
 	//example.Example_OAuth2()
 	//example.Example_Exec()
 	//example.Example_msg_queue()
+
+	app_a.Test_App_A()
 	
 	for {
 		
@@ -40,5 +46,9 @@ func APP_Entry() {
 
 		public.Sleep(1000)
 	}
+}
+
+func AA(){
+
 }
 
