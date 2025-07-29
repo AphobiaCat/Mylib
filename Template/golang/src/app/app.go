@@ -48,7 +48,3 @@ func APP_Entry() {
 	}
 }
 
-func AA(){
-
-}
-
