@@ -3,7 +3,7 @@ BUILD_CMD=go build
 
 APP_MAIN_PATH=./src/app/app.go
 APP_SRC=./src/app/main.go
-ALL_APP_SRC=`find ./src/app -type f -name "*.go" ! -name "app.go" ! -name "main.go"`
+BUILD_SRC=./src/app
 
 DEV_MAIN_PATH=./src/dev_test_core/main.go.dev
 DEV_SRC=./src/main.go
@@ -15,7 +15,7 @@ all:
 
 	sed -i 's/!prod/prod/g; s/${ENTRY}/main/g' ${APP_SRC}
 
-	${BUILD_CMD} -tags=prod -o ${TAR} ./src/app
+	${BUILD_CMD} -tags=prod -o ${TAR} ${BUILD_SRC}
 
 	rm -f ${APP_SRC}
 
@@ -24,7 +24,7 @@ debug:
 
 	sed -i 's/!prod/prod/g; s/${ENTRY}/main/g' ${APP_SRC}
 	
-	${BUILD_CMD} -gcflags="all=-N -l" -tags=prod -o ${TAR} ./src/app
+	${BUILD_CMD} -gcflags="all=-N -l" -tags=prod -o ${TAR} ${BUILD_SRC}
 
 	rm -f ${APP_SRC}
 

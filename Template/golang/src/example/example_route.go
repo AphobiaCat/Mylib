@@ -42,29 +42,38 @@ func get_test(params map[string]string)(interface{}, bool){
 	}
 }
 
-func get_test_recv_mid(params map[string]string, mid ...map[string]string)(interface{}, bool){
+func get_test_need_ip(params map[string]string)(interface{}, bool){
 
-	for _, val := range mid{
-		public.DBG_LOG("mid value:", val)
+	public.DBG_LOG("ip[", params["ip"], "]")
+	return params, true
+}
+
+func post_test_need_ip(body string)(interface{}, bool){
+
+	var body_s struct{
+		IP	string	`json:"ip"`
 	}
 
-	if len(mid) != 0{
-		ret := mid[0]["auth"] + mid[0]["auth2"]
-		return ret, true
-	}
-	return "null", false
+	public.Parser_Json(body, &body_s)
+
+	public.DBG_LOG("ip[", body_s.IP, "]")
+	return body_s, true
 }
 
 
-type Login_Data struct {
-	Uid			string	`json:"uid"`
-	Name		string	`json:"name"`
-	Age			int 	`json:"age"`
+func get_test_recv_mid(params map[string]string)(interface{}, bool){
+
+	public.DBG_LOG(params)
+	return params, true
 }
 
 func post_test(body_json string)(interface{}, bool){
 
-	var login_data Login_Data
+	var login_data struct {
+		Uid			string	`json:"uid"`
+		Name		string	`json:"name"`
+		Age			int 	`json:"age"`
+	}
 
 	public.Parser_Json(body_json, &login_data)
 
@@ -73,13 +82,8 @@ func post_test(body_json string)(interface{}, bool){
 	return login_data, true
 }
 
-func post_test_recv_mid(body_json string, mid ...map[string]string)(interface{}, bool){
-
-	if len(mid) != 0{
-		ret := mid[0]["auth"] + mid[0]["auth2"]
-		return ret, true
-	}
-	return "null", false
+func post_test_recv_mid(body_json string)(interface{}, bool){
+	return body_json, true
 }
 
 func test_jwt(){
@@ -147,22 +151,22 @@ func Example_Route(){
 	//test_jwt()
 	show_test_jwt()
 
-	route_manager.Route_Get("get_test", 	get_test, []string{"one", "two", "three"}, "get_test err")
-	route_manager.Route_Get("get_test2", 	get_test, []string{"one", "two", "three"}, "get_test2 err", auth_mid, []string{"auth", "auth2"}, "mid auth err")
-	route_manager.Route_Get("get_test3",	get_test_recv_mid, []string{"one", "two", "three"}, "get_test2 err", auth_mid, []string{"auth", "auth2"}, "mid auth err")	
-	route_manager.Route_Get("get_jwt_test4",get_test_recv_mid, []string{"one", "two", "three"}, "get_test2 err", auth_mid, []string{"auth", "auth2"}, "mid auth err", route_manager.Route_Get_Jwt_Mid, []string{"token"}, "jwt auth err")
+	route := route_manager.New()
 
-	route_manager.Route_Post("post_test1", 	post_test, "post_test err")
-	route_manager.Route_Post("post_test2", 	post_test, "post_test err", auth_mid, []string{"auth", "auth2"}, "mid auth err")	
-	route_manager.Route_Post("post_test3",	post_test_recv_mid	, "post_test err", auth_mid, []string{"auth", "auth2"}, "mid auth err")
-	route_manager.Route_Post("post_jwt_test4",post_test_recv_mid, "post_test err", auth_mid, []string{"auth", "auth2"}, "mid auth err", route_manager.Route_Get_Jwt_Mid, []string{"token"}, "jwt auth err")
-
-	route_manager.Route_Get("get_test_1s_call", 	get_test, 60, []string{"one", "two", "three"}, "get_test err")
-	route_manager.Route_Get("get_test2_2s_call", 	get_test, 30, []string{"one", "two", "three"}, "get_test2 err", auth_mid, []string{"auth", "auth2"}, "mid auth err")
-	route_manager.Route_Post("post_test3_6s_call", 	post_test, 10, "post_test err")
-	route_manager.Route_Post("post_test4_60s_call", post_test, 1, "post_test err", auth_mid, []string{"auth", "auth2"}, "mid auth err")
+	route.Route_Get("get_test", get_test).RecvParams("one", "two", "three").Alert("get_test err")
+	route.Route_Get("get_test2", get_test).RecvParams("one", "two", "three").Alert("get_test2 err")
+	route.Route_Get("get_test3", get_test_recv_mid).RecvParams("one", "two", "three").Alert("get_test3 err").Middle(auth_mid).MiddleParams("auth", "auth2").MiddleAlert("mid auth err")
+	route.Route_Get("get_jwt_test4", get_test_recv_mid).RecvParams("one", "two", "three").Alert("get_test4 err").Middle(auth_mid).MiddleParams("auth", "auth2").MiddleAlert("mid auth err").Middle(route_manager.Route_Get_Jwt_Mid).MiddleParams("token").MiddleAlert("jwt auth err")
 	
-	route_manager.Init_Route("0.0.0.0:7001")
+	route.Route_Post("post_test1", post_test).Alert("post_test err")
+	route.Route_Post("post_test2", post_test_recv_mid).Alert("post_test2 err").Middle(auth_mid).MiddleParams("auth", "auth2").MiddleAlert("mid auth err")
+	route.Route_Post("post_jwt_test3", post_test_recv_mid).Alert("post_test3 err").Middle(auth_mid).MiddleParams("auth", "auth2").MiddleAlert("mid auth err").Middle(route_manager.Route_Get_Jwt_Mid).MiddleParams("token").MiddleAlert("jwt auth err")
+
+	route.Route_Get("get_test_1s_call", get_test).RecvParams("one", "two", "three").Alert("get_test err").ReqLimit(1, 1)
+	route.Route_Get("get_test_need_ip", get_test_need_ip).Alert("get_test_need_ip err").NeedUserIp()
+	route.Route_Post("post_test_need_ip", post_test_need_ip).Alert("post_test_need_ip err").NeedUserIp()
+
+	route.Init_Route("0.0.0.0:7001")
 }
 
 
