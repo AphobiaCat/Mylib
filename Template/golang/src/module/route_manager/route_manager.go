@@ -190,7 +190,6 @@ func process_route_middleware_module(process mitCallback, need_header []string, 
 	}
 }
 
-
 func (rm *RouteManager) Init_Route(bind_addr string){
 	gin.SetMode(gin.ReleaseMode)
 	rm.http_service	= gin.New()

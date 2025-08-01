@@ -69,9 +69,9 @@ func Example_quic_socket(){
 }
 
 func Example_socket_server(){
-	go Example_tcp_socket()
-	go Example_udp_socket()
-	go Example_udp_socket_config_timeout()
+	//Example_tcp_socket()
+	//Example_udp_socket()
+	//go Example_udp_socket_config_timeout()
 	Example_quic_socket()
 }
 

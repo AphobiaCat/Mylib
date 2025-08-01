@@ -12,6 +12,7 @@ import (
 )
 
 type Socket_Client struct {
+	IP				string
 	Err_msg			chan string
 	
 	Recv_msg		chan string
@@ -98,6 +99,7 @@ func tcp_listen(port string, client_channel chan Socket_Client){
 			Recv_msg: make(chan string, 10),
 			Send_msg: make(chan string, 10),
 			Err_msg	: make(chan string, 2),
+			IP		: conn.RemoteAddr().String(),
 		}
 
 		client_channel <- tmp_client
@@ -206,6 +208,7 @@ func udp_listen(port string , client_channel chan Socket_Client, udp_timeout ...
 				Recv_msg: make(chan string, 10),
 				Send_msg: make(chan string, 10),
 				Err_msg : make(chan string, 2),
+				IP		: client_addr,
 			}
 			udp_client_map[client_addr] = tmp_client
 			client = tmp_client
@@ -298,6 +301,7 @@ func quic_handle_conn(conn quic.Connection, client_channel chan Socket_Client){
 			Recv_msg: make(chan string, 10),
 			Send_msg: make(chan string, 10),
 			Err_msg : make(chan string, 2),
+			IP		: addr.String(),
 		}
 
 		client_channel <- tmp_client
