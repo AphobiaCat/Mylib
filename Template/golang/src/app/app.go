@@ -5,7 +5,7 @@ package main
 
 import (
 	"mylib/src/public"
-	"mylib/src/example"
+	//"mylib/src/example"
 	"mylib/src/app/app_a"
 )
 
@@ -31,7 +31,7 @@ func APP_Entry() {
 	//example.Example_Ws_Route()
 	//example.Example_file()
 	//example.Example_bitnum()
-	example.Example_socket_server()
+	//example.Example_socket_server()
 	//example.Example_socket_client()
 	//example.Example_thread_map()
 	//example.Example_OAuth2()
