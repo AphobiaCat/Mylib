@@ -41,7 +41,6 @@ func APP_Entry() {
 	app_a.Test_App_A()
 	
 	for {
-		
 		public.DBG_LOG("hello world")
 
 		public.Sleep(1000)
