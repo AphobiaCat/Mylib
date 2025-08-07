@@ -1,4 +1,5 @@
 package socket_manager
+/*
 
 import (
 	"net"
@@ -36,7 +37,7 @@ func New()*Route_Socket_Manager{
 	return &Route_Socket_Manager{}
 }
 
-func new_route(callback interface{}, route_type routeType)*Route_Socket_Unit{}{
+func new_route(callback interface{}, route_type routeType)*Route_Socket_Unit{
 	ret				:= &Route_Socket_Unit{}
 	ret.route_type	= route_type
 	switch callback.(type){
@@ -75,5 +76,5 @@ func (rsm *Route_Socket_Manager) Route_QUIC(callback interface{})*Route_Socket_U
 	return ret
 }
 
-
+*/
 

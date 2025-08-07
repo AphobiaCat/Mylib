@@ -1,11 +1,11 @@
 package app_a
 
-
-import(
+import (
 	"mylib/src/public"
 )
 
-func Test_App_A(){
+
+func Test_App_A() {
 	public.DBG_LOG("hello app_a package")
 }
 
