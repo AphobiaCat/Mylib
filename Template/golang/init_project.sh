@@ -17,7 +17,7 @@ Description=$2
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/$1
+ExecStart=/usr/bin/$1 --config config_prod.yaml
 Restart=always
 RestartSec=3
 StartLimitInterval=0
