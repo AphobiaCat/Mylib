@@ -7,11 +7,11 @@ import (
 	"mylib/src/public"
 	//"mylib/src/example"
 	"mylib/src/app/app_a"
+	"mylib/src/app/app_b"
 )
 
 
 // ----------------Global Parameter>
-
 
 // ----------------Function>
 
@@ -39,6 +39,7 @@ func APP_Entry() {
 	//example.Example_msg_queue()
 	
 	app_a.Test_App_A()
+	app_b.Test_App_B()
 	
 	for {
 		public.DBG_LOG("hello world")
