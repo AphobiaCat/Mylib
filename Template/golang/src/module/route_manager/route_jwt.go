@@ -92,7 +92,7 @@ func Route_Get_Jwt_Mid(headers map[string]string)(map[string]string, bool){
 
 	if succ{
 		ret_data := make(map[string]string)
-		ret_data["data"] = data
+		ret_data["jwt"] = data
 		return ret_data, true
 	}
 

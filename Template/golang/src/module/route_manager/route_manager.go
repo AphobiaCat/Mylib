@@ -1,6 +1,7 @@
 package route_manager
 
 import (
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-contrib/cors"
 	
@@ -184,7 +185,7 @@ func process_route_middleware_module(process mitCallback, need_header []string, 
 			c.Next()
 
 		}else{
-			c.JSON(http.StatusUnauthorized, gin.H{"error": err_info})
+			c.JSON(http.StatusUnauthorized, gin.H{"code": -1, "error": err_info})
 			c.Abort()
 		}     
 	}
@@ -319,7 +320,11 @@ func (rm *RouteManager) Init_Route(bind_addr string){
 
 					if mid_params, ok := mid_params_i.(map[string]string); ok{
 						for key, val := range mid_params{
-							tmp_map[key] = val
+							if key == "jwt"{
+								tmp_map[key] = json.RawMessage(val)
+							}else{
+								tmp_map[key] = val
+							}
 						}
 					}
 

@@ -1,14 +1,25 @@
 package public
 
-type callback func(string) (string, bool)
+type callback func(interface{}) (interface{}, bool)
 
-var Callbacks map[string]callback
+var callbacks map[string]callback
 
 func Reg(key string, user_callback callback){
-	Callbacks[key] = user_callback
+	callbacks[key] = user_callback
+}
+
+func Call(key string, payload interface{})(interface{}, bool){
+	if call, exist := callbacks[key]; exist{
+		return call(payload)
+	}else{
+
+		DBG_ERR("now support[", callbacks, "]")
+	
+		return "callback[" + key + "] no exist.", false
+	}
 }
 
 func init(){
-	Callbacks = make(map[string]callback)
+	callbacks = make(map[string]callback)
 }
 

@@ -4,13 +4,13 @@ import (
 	"mylib/src/public"
 )
 
-func process(payload string)(string, bool){
-	return "B:" + payload, true
+func process(payload interface{})(interface{}, bool){
+	return "B:" + payload.(string), true
 }
 
 func Test_App_B() {
 	public.DBG_LOG("hello app_b package")
-	ret, _ := public.Callbacks["A"]("hello")
+	ret, _ := public.Call("A", "hello")
 
 	public.DBG_LOG("B recv callback:", ret)
 }
