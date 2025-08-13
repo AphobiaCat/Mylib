@@ -232,7 +232,7 @@ func (csm *Cache_Sql_Manager) Get_Cache(key string, new_cache_func New_Cache_Fun
 }
 
 func (csm *Cache_Sql_Manager) Del_Cache(key string) {
-	err := csm.rdb.Del(csm.ctx, key)
+	err := csm.rdb.Del(csm.ctx, key).Err()
 	if err != nil{
 		public.DBG_ERR("del cache err:", err)
 	}
