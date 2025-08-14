@@ -231,6 +231,8 @@ func Route_WS(api string, call_back interface{})bool{
 	ws_route_process[api] = process
 	ws_route_process_lock.Unlock()
 
+	public.DBG_LOG("Ws --> ", api)
+
 	return true
 }
 

@@ -33,8 +33,6 @@ func test_ws_route_big_payload(uid string, payload string, big_payload string){
 	ws_route.WS_Send_Msg(uid, "big-payload", "hello world test", "big payload")
 }
 
-
-
 func test_ws_exit(uid string){
 	public.DBG_ERR(uid, " logout")
 }
