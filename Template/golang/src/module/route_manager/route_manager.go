@@ -309,7 +309,7 @@ func (rm *RouteManager) Init_Route(bind_addr string){
 				body_str := string(body)
 				
 				if route.need_user_ip || len(route.mid_callbacks) > 0{					
-					var tmp_map map[string]interface{}
+					tmp_map := make(map[string]interface{})
 					public.Parser_Json(body_str, &tmp_map)	
 
 					if route.need_user_ip {				

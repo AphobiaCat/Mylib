@@ -207,7 +207,7 @@ func ws_route_handler(w http.ResponseWriter, r *http.Request){
 func Route_WS(api string, call_back interface{})bool{
 	var process route_process
 
-	switch call_back.(type){
+	switch t := call_back.(type){
 		case func(string, string)(interface{}, bool):
 			process.have_ret_process				= call_back.(func(string, string)(interface{}, bool))
 			process.have_ret						= true
@@ -224,6 +224,7 @@ func Route_WS(api string, call_back interface{})bool{
 			process.have_big_payload				= true
 			
 		default:
+			public.DBG_ERR("no support this type :", t)
 			return false
 	}
 	
