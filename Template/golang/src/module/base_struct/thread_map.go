@@ -1,4 +1,4 @@
-package thread_map
+package base_struct
 
 import (
 	"mylib/src/public"
