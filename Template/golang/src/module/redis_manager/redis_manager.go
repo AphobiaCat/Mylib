@@ -214,6 +214,53 @@ func (rm *Redis_Manager) Add_Float_Num(redis_key string, num float64, timeout_s 
     return values, true
 }
 
+func (rm *Redis_Manager) HSet(redis_key string, hash_key string, value interface{}){
+	err := rm.rdb.HSet(rm.ctx, redis_key, hash_key, public.Build_Json(value)).Err()
+    if err != nil {
+    	public.DBG_ERR("redis HSet err:", err)
+    }
+}
+
+func (rm *Redis_Manager) HLen(redis_key string)int64{
+	len_of_map, err := rm.rdb.HLen(rm.ctx, redis_key).Result()
+    if err != nil {
+    	public.DBG_ERR("redis HLen err:", err)
+    }
+
+    return len_of_map
+}
+
+func (rm *Redis_Manager) HGetAll(redis_key string)(map[string]string){
+	ret, err := rm.rdb.HGetAll(rm.ctx, redis_key).Result()
+    if err != nil {
+    	public.DBG_ERR("redis HGetAll err:", err)
+    }
+    return ret
+}
+
+func (rm *Redis_Manager) HExist(redis_key string, hash_key string)(bool){
+	ret, err := rm.rdb.HExist(rm.ctx, redis_key, hash_key).Result()
+    if err != nil {
+    	public.DBG_ERR("redis HExist err:", err)
+    }
+    return ret
+}
+
+func (rm *Redis_Manager) HGet(redis_key string, hash_key string)(string){
+	ret, err := rm.rdb.HGet(rm.ctx, redis_key, hash_key).Result()
+    if err != nil {
+    	public.DBG_ERR("redis HGet err:", err)
+    }
+    return ret
+}
+
+func (rm *Redis_Manager) HDel(redis_key string, hash_key string){
+	err := rm.rdb.HDel(rm.ctx, redis_key, hash_key).Err()
+    if err != nil {
+    	public.DBG_ERR("redis HDel err:", err)
+    }
+}
+
 func (rm *Redis_Manager) Get(redis_key string)(string, bool){
 	values, err := rm.rdb.Get(rm.ctx, redis_key).Result()
     if err != nil {
@@ -280,6 +327,30 @@ func Add_Num(key string, num int64, timeout_s ...int64) (int64, bool){
 
 func Add_Float_Num(key string, num float64, timeout_s ...int64) (float64, bool){
 	return redis_manager.Add_Float_Num(key, num, timeout_s...)
+}
+
+func HSet(redis_key string, hash_key string, value interface{}){
+	redis_manager.HSet(redis_key, hash_key, value)
+}
+
+func HLen(redis_key string)int64{
+	return redis_manager.HLen(redis_key)
+}
+
+func HGetAll(redis_key string)(map[string]string){
+	return redis_manager.HGetAll(redis_key)
+}
+
+func HExist(redis_key string, hash_key string)(bool){
+	return redis_manager.HExist(redis_key, hash_key)
+}
+
+func HGet(redis_key string, hash_key string)(string){
+	return redis_manager.HGet(redis_key, hash_key)
+}
+
+func HDel(redis_key string, hash_key string){
+	redis_manager.HDel(redis_key, hash_key)
 }
 
 func Get(key string)(string, bool) {
