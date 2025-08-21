@@ -238,8 +238,8 @@ func (rm *Redis_Manager) HGetAll(redis_key string)(map[string]string){
     return ret
 }
 
-func (rm *Redis_Manager) HExist(redis_key string, hash_key string)(bool){
-	ret, err := rm.rdb.HExist(rm.ctx, redis_key, hash_key).Result()
+func (rm *Redis_Manager) HExists(redis_key string, hash_key string)(bool){
+	ret, err := rm.rdb.HExists(rm.ctx, redis_key, hash_key).Result()
     if err != nil {
     	public.DBG_ERR("redis HExist err:", err)
     }
@@ -341,8 +341,8 @@ func HGetAll(redis_key string)(map[string]string){
 	return redis_manager.HGetAll(redis_key)
 }
 
-func HExist(redis_key string, hash_key string)(bool){
-	return redis_manager.HExist(redis_key, hash_key)
+func HExists(redis_key string, hash_key string)(bool){
+	return redis_manager.HExists(redis_key, hash_key)
 }
 
 func HGet(redis_key string, hash_key string)(string){
@@ -388,7 +388,7 @@ func init(){
 		public.DBG_ERR("unable connet Redis:", err)
 		panic(err)
 	}
-	public.DBG_LOG("connect redis server succ")
+	public.DBG_LOG("connect redis server succ ip[", public.Config.Redis.Ip, "] db[", public.Config.Redis.DB, "]")
 	
 
 	//rdb := redis_manager.rdb

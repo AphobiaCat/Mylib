@@ -42,3 +42,31 @@ func Example_thread_map(){
 	test_thread_map2(&tmp)
 }
 
+func notify_room(notify_who string, who_active string, payload interface{}){
+	public.DBG_LOG("user[", notify_who, "] recive other user[", who_active, "] payload[", payload, "]")
+}
+
+func Example_room(){
+	
+	rm := base_struct.New_Room("test_room", notify_room)
+
+	rm.Create_Room("Dunty")
+	room_id, succ := rm.Create_Room("Dunty")
+	public.DBG_LOG("new room[", room_id, "] succ[", succ, "]")
+	rm.Join_Room("Mila", room_id)
+	rm.Join_Room("Duduo", room_id)
+
+	rm.Do_Sth("Mila", "speak", "hello room")
+	rm.Do_Sth("Dunty", "speak", "hello room")
+	rm.Do_Sth("Duduo", "speak", "hello room")
+	
+	rm.Exit_Room("Mila")
+
+	list := rm.List_Room("10", "0")
+
+	public.DBG_LOG(list)
+	
+	rm.Exit_Room("Dunty")
+}
+
+

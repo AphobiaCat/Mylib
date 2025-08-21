@@ -12,7 +12,7 @@ database:
 redis:
   ip: 192.168.136.130:6379
   password: 123123Dunty
-  DB: 1 
+  db: 1 
   enable_tls: false
 
 nsq:

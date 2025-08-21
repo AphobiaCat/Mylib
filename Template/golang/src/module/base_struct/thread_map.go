@@ -39,7 +39,7 @@ func (this *Thread_Map[Val]) Get(key string) (ret Val){
 }
 
 func (this *Thread_Map[Val]) Get_All() (ret map[string]Val){
-	all_info := redis.HGetAll(map_redis_key)
+	all_info := redis.HGetAll(this.redis_key)
 
 	ret = make(map[string]Val)
 
@@ -54,8 +54,8 @@ func (this *Thread_Map[Val]) Get_All() (ret map[string]Val){
 }
 
 
-func (this *Thread_Map[Val]) Exist(key string) (bool){
-	return redis.HExist(this.redis_key, key)
+func (this *Thread_Map[Val]) HExist(key string) (bool){
+	return redis.HExists(this.redis_key, key)
 }
 
 func (this *Thread_Map[Val]) Ready_Set(key string){
@@ -89,6 +89,7 @@ func (this *Thread_Map[Val]) Set(key string, new_val Val){
 
 func (this *Thread_Map[Val]) Del(key string){
 	redis.HDel(this.redis_key, key)
+	delete(this.lock_index, key)
 }
 
 func New_Thread_Map[Val any](map_redis_key string)Thread_Map[Val]{
