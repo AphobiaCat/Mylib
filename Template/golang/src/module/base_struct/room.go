@@ -89,13 +89,17 @@ func (o *Room_Manager) Create_Room(creator string)(rand_room_id_str string, succ
 	return
 }
 
-func (o *Room_Manager) Join_Room(who string, room_id string){
+func (o *Room_Manager) Join_Room(who string, room_id string)(Room, bool){
 
 	o.Exit_Room(who)
 
 	o.room.Ready_Set(room_id)
 	
-	room := o.room.Get(room_id)
+	room, exist := o.room.Get(room_id)
+
+	if !exist{
+		return room, false
+	}
 
 	room.Members = append(room.Members, who)
 	
@@ -113,6 +117,8 @@ func (o *Room_Manager) Join_Room(who string, room_id string){
 	o.room_index_lock.Lock()
 	o.room_index[who] = room_id
 	o.room_index_lock.Unlock()
+
+	return room, true
 }
 
 func (o *Room_Manager) Exit_Room(who string){
@@ -123,7 +129,11 @@ func (o *Room_Manager) Exit_Room(who string){
 	if exist{	
 		o.room.Ready_Set(room_id)
 	
-		room := o.room.Get(room_id)
+		room, exist := o.room.Get(room_id)
+
+		if !exist{
+			return
+		}
 
 		if room.Creator == who{
 			o.room_speed_access_lock.Lock()
@@ -167,7 +177,7 @@ func (o *Room_Manager) Exit_Room(who string){
 	}
 }
 
-func (o *Room_Manager) Do_Sth(who string, action string, payload string){
+func (o *Room_Manager) Do_Sth(who string, action string, payload string)bool{
 	o.room_index_lock.Lock()
 	room_id, exist := o.room_index[who]
 	o.room_index_lock.Unlock()
@@ -182,8 +192,14 @@ func (o *Room_Manager) Do_Sth(who string, action string, payload string){
 				o.notify(user_id, who, Notify{Action: action, Payload: payload})
 			}
 			o.notify(room.Creator, who, Notify{Action: action, Payload: payload})
+
+			return true
 		}
+
+		return false
 	}
+
+	return false
 }
 
 func (o *Room_Manager) List_Room(limit string, offset string) string{	

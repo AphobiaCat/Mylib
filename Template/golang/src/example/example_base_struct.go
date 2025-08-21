@@ -16,9 +16,9 @@ func test_thread_map2(tmp *base_struct.Thread_Map[Test_Thread_Map]){
 	for i:= 0; i < 100; i++{
 		tmp.Ready_Set("111")
 
-		val := tmp.Get("111")
+		val, exist := tmp.Get("111")
 		
-		public.DBG_LOG("val[", val, "]")
+		public.DBG_LOG("val[", val, "] exist[", exist, "]")
 
 		val.Age += 1
 		

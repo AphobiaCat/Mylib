@@ -31,10 +31,15 @@ func (this *Thread_Map[Val]) init(map_redis_key string){
 	this.redis_key = map_redis_key
 }
 
-func (this *Thread_Map[Val]) Get(key string) (ret Val){
+func (this *Thread_Map[Val]) Get(key string) (ret Val, exist bool){
 	result := redis.HGet(this.redis_key, key)
 
+	if len(result) == 0{
+		return
+	}
+
 	public.Parser_Json(result, &ret)
+	exist = true
 	return
 }
 
