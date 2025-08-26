@@ -92,6 +92,18 @@ func (this *Thread_Map[Val]) Set(key string, new_val Val){
 	return
 }
 
+func (this *Thread_Map[Val]) Cancel_Set(key string){
+	this.index_lock.Lock()
+	index, exist := this.lock_index[key]
+	this.index_lock.Unlock()
+	if !exist{
+		return
+	}
+
+	this.val_lock[index].Unlock()
+	return
+}
+
 func (this *Thread_Map[Val]) Del(key string){
 	redis.HDel(this.redis_key, key)
 	delete(this.lock_index, key)

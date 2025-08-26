@@ -13,8 +13,10 @@ const(
 )
 
 type Room struct{
+	Room_Id				string			`json:"room_id"`
 	Creator				string			`json:"creator"`
 	Members				[]string		`json:"members"`
+	Limit_Join			bool			`json:"limit_join"`
 }
 
 type Notify struct{
@@ -26,14 +28,14 @@ type Room_Manager struct{
 	room					Thread_Map[Room]	// room_id as index
 	room_index				map[string]string	// who -> room id
 	room_index_lock 		sync.Mutex
-	notify					func(target_user string, who string, payload interface{})
+	notify					func(target_user string, who string, msg Notify)
 
 	room_speed_access		map[string]Room		// room id
 	room_speed_access_lock 	sync.Mutex
 	redis_key				string
 }
 
-func (o *Room_Manager) Init(redis_key string, notify func(target_user string, who string, payload interface{})){
+func (o *Room_Manager) Init(redis_key string, notify func(target_user string, who string, msg Notify)){
 	o.room				= New_Thread_Map[Room](redis_key)
 	o.room_index		= make(map[string]string)
 	o.notify			= notify
@@ -63,7 +65,7 @@ func (o *Room_Manager) Create_Room(creator string)(rand_room_id_str string, succ
 	
 		if !o.room.HExist(rand_room_id_str){
 
-			new_room := Room{Creator: creator}
+			new_room := Room{Room_Id: rand_room_id_str, Creator: creator}
 
 			o.room.Ready_Set(rand_room_id_str)
 			o.room.Set(rand_room_id_str, new_room)
@@ -97,7 +99,8 @@ func (o *Room_Manager) Join_Room(who string, room_id string)(Room, bool){
 	
 	room, exist := o.room.Get(room_id)
 
-	if !exist{
+	if !exist || room.Room_Id != room_id || room.Limit_Join{
+		o.room.Cancel_Set(room_id)
 		return room, false
 	}
 
@@ -131,7 +134,8 @@ func (o *Room_Manager) Exit_Room(who string){
 	
 		room, exist := o.room.Get(room_id)
 
-		if !exist{
+		if !exist || room.Room_Id != room_id{
+			o.room.Cancel_Set(room_id)
 			return
 		}
 
@@ -149,7 +153,8 @@ func (o *Room_Manager) Exit_Room(who string){
 				delete(o.room_index, user_id)
 				o.room_index_lock.Unlock()
 			}
-
+			
+			o.room.Cancel_Set(room_id)
 			o.room.Del(room_id)
 		}else{
 
@@ -202,18 +207,47 @@ func (o *Room_Manager) Do_Sth(who string, action string, payload string)bool{
 	return false
 }
 
-func (o *Room_Manager) List_Room(limit string, offset string) string{	
+func (o *Room_Manager) Limit_Switch(who string, limit_join bool)bool{
+	o.room_index_lock.Lock()
+	room_id, exist := o.room_index[who]
+	o.room_index_lock.Unlock()
+
+	if exist{
+		o.room_speed_access_lock.Lock()
+		room, exist := o.room_speed_access[room_id]
+		o.room_speed_access_lock.Unlock()
+
+		if exist && room.Creator == who{
+			o.room.Ready_Set(room_id)
+	
+			room, exist := o.room.Get(room_id)
+
+			if !exist{
+				public.DBG_ERR("unexpect error room_id[", room_id, "] who[", who, "]")
+				o.room.Cancel_Set(room_id)
+				return false
+			}
+
+			room.Limit_Join = limit_join
+
+			o.room.Set(room_id, room)
+		}
+
+		return false
+	}
+
+	return false
+}
+
+func (o *Room_Manager) List_Room(limit string, offset string) (ret []Room){	
 
 	o.room_speed_access_lock.Lock()
 	total_map := o.room_speed_access
 	o.room_speed_access_lock.Unlock()
 
-	public.DBG_ERR(total_map)
+	//public.DBG_ERR(total_map)
 
 	ret_info := cache.Get_Cache(o.redis_key + "_list:" + limit + ":" + offset, func()interface{}{
-		
-		var ret []Room
-
 		i := int64(0)
 		wait_stop := false
 		offset_num := public.ConvertStrToNum(offset)
@@ -239,11 +273,13 @@ func (o *Room_Manager) List_Room(limit string, offset string) string{
 		return ret
 	}, 30, 30, 30)
 
-	return ret_info
+	public.Parser_Json(ret_info, &ret)
+
+	return
 }
 
 
-func New_Room(redis_key string, notify func(target_user string, who string, payload interface{}))*Room_Manager{
+func New_Room(redis_key string, notify func(target_user string, who string, msg Notify))*Room_Manager{
 	room := &Room_Manager{}
 	room.Init(redis_key, notify)
 	

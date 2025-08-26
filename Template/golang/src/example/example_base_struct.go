@@ -42,8 +42,8 @@ func Example_thread_map(){
 	test_thread_map2(&tmp)
 }
 
-func notify_room(notify_who string, who_active string, payload interface{}){
-	public.DBG_LOG("user[", notify_who, "] recive other user[", who_active, "] payload[", payload, "]")
+func notify_room(notify_who string, who_active string, msg base_struct.Notify){
+	public.DBG_LOG("user[", notify_who, "] recive other user[", who_active, "] msg[", msg, "]")
 }
 
 func Example_room(){
