@@ -10,6 +10,8 @@ const(
 	ROOM_CREATE	= "create_room"
 	ROOM_JOIN	= "join_room"
 	ROOM_EXIT	= "exit_room"
+	
+	DEFAULT_MAX_MEMBER = 10
 )
 
 type Room struct{
@@ -17,6 +19,7 @@ type Room struct{
 	Creator				string			`json:"creator"`
 	Members				[]string		`json:"members"`
 	Limit_Join			bool			`json:"limit_join"`
+	Max_Member			int				`json:"max_member"`
 }
 
 type Notify struct{
@@ -65,7 +68,7 @@ func (o *Room_Manager) Create_Room(creator string)(rand_room_id_str string, succ
 	
 		if !o.room.HExist(rand_room_id_str){
 
-			new_room := Room{Room_Id: rand_room_id_str, Creator: creator}
+			new_room := Room{Room_Id: rand_room_id_str, Creator: creator, Max_Member: DEFAULT_MAX_MEMBER}
 
 			o.room.Ready_Set(rand_room_id_str)
 			o.room.Set(rand_room_id_str, new_room)
@@ -99,7 +102,7 @@ func (o *Room_Manager) Join_Room(who string, room_id string)(Room, bool){
 	
 	room, exist := o.room.Get(room_id)
 
-	if !exist || room.Room_Id != room_id || room.Limit_Join{
+	if !exist || room.Room_Id != room_id || room.Limit_Join || len(room.Members) >= room.Max_Member{
 		o.room.Cancel_Set(room_id)
 		return room, false
 	}
@@ -122,6 +125,22 @@ func (o *Room_Manager) Join_Room(who string, room_id string)(Room, bool){
 	o.room_index_lock.Unlock()
 
 	return room, true
+}
+
+func (o *Room_Manager) Join_Rand_Room(who string)(ret Room, succ bool){
+	o.room_speed_access_lock.Lock()
+	rooms := o.room_speed_access
+	o.room_speed_access_lock.Unlock()
+
+	for room_id, room := range rooms{
+		if !room.Limit_Join{
+			ret, succ = o.Join_Room(who, room_id)
+			if succ{
+				return
+			}
+		}
+	}
+	return
 }
 
 func (o *Room_Manager) Exit_Room(who string){
@@ -212,6 +231,10 @@ func (o *Room_Manager) Limit_Switch(who string, limit_join bool)bool{
 	room_id, exist := o.room_index[who]
 	o.room_index_lock.Unlock()
 
+	//public.DBG_LOG(
+
+"room[", room_id, "] limit[", limit_join, "]")
+
 	if exist{
 		o.room_speed_access_lock.Lock()
 		room, exist := o.room_speed_access[room_id]
@@ -231,6 +254,14 @@ func (o *Room_Manager) Limit_Switch(who string, limit_join bool)bool{
 			room.Limit_Join = limit_join
 
 			o.room.Set(room_id, room)
+
+			// public.DBG_LOG(room)
+
+			o.room_speed_access_lock.Lock()
+			o.room_speed_access[room_id] = room
+			o.room_speed_access_lock.Unlock()
+
+			return true
 		}
 
 		return false
