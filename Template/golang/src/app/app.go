@@ -39,7 +39,7 @@ func APP_Entry() {
 	//example.Example_Exec()
 	//example.Example_msg_queue()
 	
-	app_a.Test_App_A()
+	app_a.Test_App_A() 
 	app_b.Test_App_B()
 	
 	for {
