@@ -23,22 +23,23 @@ type Room struct{
 }
 
 type Notify struct{
+	WhoActive			string			`json:"who_active"`
 	Action				string			`json:"action"`
-	Payload				string			`json:"payload"`
+	Payload				interface{}		`json:"payload"`
 }
 
 type Room_Manager struct{
 	room					Thread_Map[Room]	// room_id as index
 	room_index				map[string]string	// who -> room id
 	room_index_lock 		sync.Mutex
-	notify					func(target_user string, who string, msg Notify)
+	notify					func(target_user string, msg Notify)
 
 	room_speed_access		map[string]Room		// room id
 	room_speed_access_lock 	sync.Mutex
 	redis_key				string
 }
 
-func (o *Room_Manager) Init(redis_key string, notify func(target_user string, who string, msg Notify)){
+func (o *Room_Manager) Init(redis_key string, notify func(target_user string, msg Notify)){
 	o.room				= New_Thread_Map[Room](redis_key)
 	o.room_index		= make(map[string]string)
 	o.notify			= notify
@@ -79,7 +80,7 @@ func (o *Room_Manager) Create_Room(creator string)(rand_room_id_str string, succ
 		
 			succ = true
 
-			o.notify(creator, creator, Notify{Action: ROOM_CREATE})
+			o.notify(creator, Notify{WhoActive: creator, Action: ROOM_CREATE})
 
 			o.room_speed_access_lock.Lock()
 			o.room_speed_access[rand_room_id_str] = new_room
@@ -112,9 +113,9 @@ func (o *Room_Manager) Join_Room(who string, room_id string)(Room, bool){
 	o.room.Set(room_id, room)
 
 	for _, user_id := range room.Members{
-		o.notify(user_id, who, Notify{Action: ROOM_JOIN})
+		o.notify(user_id, Notify{WhoActive: who, Action: ROOM_JOIN})
 	}
-	o.notify(room.Creator, who, Notify{Action: ROOM_JOIN})
+	o.notify(room.Creator, Notify{WhoActive: who, Action: ROOM_JOIN})
 
 	o.room_speed_access_lock.Lock()
 	o.room_speed_access[room_id] = room
@@ -195,13 +196,13 @@ func (o *Room_Manager) Exit_Room(who string){
 		}
 
 		for _, user_id := range room.Members{
-			o.notify(user_id, who, Notify{Action: ROOM_EXIT})
+			o.notify(user_id, Notify{WhoActive: who, Action: ROOM_EXIT})
 		}
-		o.notify(room.Creator, who, Notify{Action: ROOM_EXIT})
+		o.notify(room.Creator, Notify{WhoActive: who, Action: ROOM_EXIT})
 	}
 }
 
-func (o *Room_Manager) Do_Sth(who string, action string, payload string)bool{
+func (o *Room_Manager) Do_Sth(who string, action string, payload interface{})bool{
 	o.room_index_lock.Lock()
 	room_id, exist := o.room_index[who]
 	o.room_index_lock.Unlock()
@@ -213,9 +214,9 @@ func (o *Room_Manager) Do_Sth(who string, action string, payload string)bool{
 
 		if exist{
 			for _, user_id := range room.Members{
-				o.notify(user_id, who, Notify{Action: action, Payload: payload})
+				o.notify(user_id, Notify{WhoActive: who, Action: action, Payload: payload})
 			}
-			o.notify(room.Creator, who, Notify{Action: action, Payload: payload})
+			o.notify(room.Creator, Notify{WhoActive: who, Action: action, Payload: payload})
 
 			return true
 		}
@@ -231,9 +232,7 @@ func (o *Room_Manager) Limit_Switch(who string, limit_join bool)bool{
 	room_id, exist := o.room_index[who]
 	o.room_index_lock.Unlock()
 
-	//public.DBG_LOG(
-
-"room[", room_id, "] limit[", limit_join, "]")
+	//public.DBG_LOG("room[", room_id, "] limit[", limit_join, "]")
 
 	if exist{
 		o.room_speed_access_lock.Lock()
@@ -310,7 +309,7 @@ func (o *Room_Manager) List_Room(limit string, offset string) (ret []Room){
 }
 
 
-func New_Room(redis_key string, notify func(target_user string, who string, msg Notify))*Room_Manager{
+func New_Room(redis_key string, notify func(target_user string, msg Notify))*Room_Manager{
 	room := &Room_Manager{}
 	room.Init(redis_key, notify)
 	

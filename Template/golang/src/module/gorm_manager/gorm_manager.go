@@ -122,8 +122,15 @@ func (gm *Gorm_Manager) Update(data interface{}, volume string, new_data interfa
 	return result.Error
 }
 
-func (gm *Gorm_Manager) Updates(data interface{}, new_data interface{}) error{
-	result := gm.db.Model(data).Select("*").Updates(new_data)
+func (gm *Gorm_Manager) Updates(data interface{}, new_data interface{}, effect_volume ...string) error{
+
+	var result *gorm.DB
+
+	if len(effect_volume) == 0{
+		result = gm.db.Model(data).Select("*").Updates(new_data)
+	}else{
+		result = gm.db.Model(data).Select(effect_volume).Updates(new_data)
+	}
 
 	if result.Error != nil {
 	    public.DBG_ERR("Error:", result.Error)
@@ -197,8 +204,8 @@ func Gorm_Update(data interface{}, volume string, new_data interface{}) error{
 	return gorm_manager.Update(data, volume, new_data)
 }
 
-func Gorm_Updates(data interface{}, new_data interface{}) error{
-    return gorm_manager.Updates(data, new_data)
+func Gorm_Updates(data interface{}, new_data interface{}, effect_volume ...string) error{
+    return gorm_manager.Updates(data, new_data, effect_volume...)
 }
 
 func Gorm_Delete(data interface{}) error{
